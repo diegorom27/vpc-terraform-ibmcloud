@@ -129,7 +129,7 @@ resource "ibm_is_instance" "vsi" {
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
 
   primary_network_interface {
-      subnet          = ibm_is_subnet.subnets[each.value.namel.subnetIndex].id
+      subnet          = ibm_is_subnet.subnets[each.value.subnetIndex].id
       security_groups = [ibm_is_security_group.example-sg.id]
   }
 }
