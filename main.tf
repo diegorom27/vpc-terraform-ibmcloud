@@ -136,7 +136,7 @@ resource "ibm_is_instance" "vsi" {
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
   for_each = { for vm in var.machines : vm.name => vm }
   
-  instance = ibm_is_instance.vsi2[each.key].id
+  instance = ibm_is_instance.vsi[each.key].id
   name     = "${each.value.name}-vol-attachment"
   delete_volume_on_instance_delete = true
   capacity = each.value.disksSize
