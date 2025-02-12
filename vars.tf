@@ -36,7 +36,7 @@ variable datacenter {
 }
 variable ENABLE_HIGH_PERFORMANCE {
     type        = bool
-    default     = "false"
+    default     = false
 }
 variable "subnets" {
     description = "List of subnets to create"
