@@ -61,11 +61,12 @@ resource "ibm_is_public_gateway" "example-gateway" {
 # subnet 
 ##############################################################################
 
-resource "ibm_is_subnet" "subnet1" {
-  name                     = "${var.BASENAME}-subnet1"
+resource "ibm_is_subnet" "subnets" {
+  for_each = {for vm in var.machines : vm.name => vm }
+  name                     = each.value.name
   vpc                      = ibm_is_vpc.example-vpc.id
-  zone                     = var.ZONE
-  ipv4_cidr_block = "10.0.0.0/24"
+  zone                     = var.zone
+  ipv4_cidr_block          = each.value.cidr
   resource_group = ibm_resource_group.example-rg.id
 }
 
@@ -118,37 +119,30 @@ resource "ibm_is_ssh_key" "ssh_key" {
 # Virtual Server Instance
 ##############################################################################
 
-resource "ibm_is_instance" "vsi1" {
-  count = length(local.windows_server_images) > 0 ? 1 : 0
-
-  name    = "${var.BASENAME}-vsi1"
+resource "ibm_is_instance" "vsi" {
+  for_each = { for vm in var.machines : vm.name => vm }
+  name    =  each.value.name
   vpc     = ibm_is_vpc.example-vpc.id
   zone    = var.ZONE
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = local.windows_server_images[0].id
-  profile = "mx2-8x64"
+  profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
 
   primary_network_interface {
-      subnet          = ibm_is_subnet.subnet1.id
+      subnet          = ibm_is_subnet.subnets[each.value.namel.subnetIndex].id
       security_groups = [ibm_is_security_group.example-sg.id]
   }
 }
-data "ibm_is_instance" "windows-instance" {
-  name        = ibm_is_instance.vsi1[0].name
-  private_key= file("${path.module}/id_rsa")
-}
-output "windows_admin_password" {
-  value = data.ibm_is_instance.windows-instance.password
-  sensitive = true
-}
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
-  instance = ibm_is_instance.vsi1[0].id
-  name                               = "example-vol-att-1"
+  for_each = { for vm in var.machines : vm.name => vm }
+  
+  instance = ibm_is_instance.vsi2[each.key].id
+  name     = "${each.value.name}-vol-attachment"
+  delete_volume_on_instance_delete = true
+  capacity = each.value.disksSize
   profile                            = "general-purpose"
-  capacity                           = "20"
   delete_volume_on_attachment_delete = true
-  delete_volume_on_instance_delete   = true
-  volume_name                        = "example-vol-1"
+  volume_name                        = "${each.value.name}-vol-1"
 
   timeouts {
     create = "15m"
@@ -156,8 +150,7 @@ resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
     delete = "15m"
   }
 }
-
 resource "ibm_is_floating_ip" "fip1" {
   name   = "${var.BASENAME}-fip1"
-  target = ibm_is_instance.vsi1[0].primary_network_interface[0].id
-} 
+  target = ibm_is_instance.vsi[0].primary_network_interface[0].id
+}
