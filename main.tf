@@ -155,5 +155,5 @@ resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
 
 resource "ibm_is_floating_ip" "fip1" {
   name   = "${var.BASENAME}-fip1"
-  target = ibm_is_instance.vsi1.primary_network_interface[0].id
+  target = ibm_is_instance.vsi1[0].primary_network_interface[0].id
 } 
