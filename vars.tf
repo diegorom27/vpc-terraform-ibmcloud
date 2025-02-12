@@ -41,22 +41,15 @@ variable ENABLE_HIGH_PERFORMANCE {
 variable "subnets" {
     description = "List of subnets to create"
     type = list(object({
-        name = string
-        zone = string
-        vpc_id = string
+        name = string,
         cidr = string
-        public_gateway_id = string
     }))
     default = [
         {
-          name = "subnet-1"
-          zone = "us-south-1"
-          vpc_id = "vpc-1"
+          name = "subnet-0",
           cidr = "10.0.0.0/29"
         },{
-          name = "subnet-2"
-          zone = "us-south-1"
-          vpc_id = "vpc-1"
+          name = "subnet-1",
           cidr = "10.0.0.8/29"
         }
     ]
@@ -65,27 +58,27 @@ variable "subnets" {
 variable machines {
     description = "List of vm for control plane"
     type = list(object({
-        name = string
-        disksSize = number
-        hProfile= string
-        lProfile= string
-        imageId= string 
+        name = string,
+        disksSize = number,
+        hProfile= string,
+        lProfile= string,
+        imageId= string ,
         subnetIndex = number
     }))
     default = [
         {
-          name = "COBOCRSPWEB04"
-          disksSize    = 150
-          hProfile = "mx2-2x16"
-          lProfile = "cx2-2x4"
-          imageId = "none"
+          name = "COBOCRSPWEB04",
+          disksSize    = 150,
+          hProfile = "mx2-2x16",
+          lProfile = "cx2-2x4",
+          imageId = "none",
           subnetIndex = 0
         },{
-          name = "COBOCRSDWEB05"
-          disksSize    = 127
-          hProfile = "bx2-4x16"
-          lProfile = "cx2-2x4"
-          imageId = "none"
+          name = "COBOCRSDWEB05",
+          disksSize    = 127,
+          hProfile = "bx2-4x16",
+          lProfile = "cx2-2x4",
+          imageId = "none",
           subnetIndex = 1
         }
     ]
