@@ -138,7 +138,7 @@ data "ibm_is_instance" "windows-instance" {
   private_key= file("${path.module}/id_rsa")
 }
 output "windows_admin_password" {
-  value = data.ibm_is_instance.windows_instance.password
+  value = data.ibm_is_instance.windows-instance.password
 }
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
   instance = ibm_is_instance.vsi1[0].id
