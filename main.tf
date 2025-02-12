@@ -133,9 +133,13 @@ resource "ibm_is_instance" "vsi1" {
       security_groups = [ibm_is_security_group.example-sg.id]
   }
 }
-data "ibm_is_instance" "example" {
+data "ibm_is_instance" "windows-instance" {
   name        = ibm_is_instance.vsi1[0].name
   private_key= file("${path.module}/id_rsa")
+}
+output "windows_admin_password" {
+  value = data.ibm_is_instance.windows_instance.encrypted_password
+  sensitive = true
 }
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
   instance = ibm_is_instance.vsi1[0].id
