@@ -45,13 +45,14 @@ variable "subnets" {
         cidr = string
     }))
     default = [
-        {
-          name = "subnet-0",
-          cidr = "10.0.0.20/28"
-        },{
-          name = "subnet-1",
-          cidr = "10.0.0.90/28"
-        }
+      {
+        name = "subnet-0",
+        cidr = "10.0.0.16/28"
+      },
+      {
+        name = "subnet-1",
+        cidr = "10.0.0.32/28"
+      }
     ]
 }
 
