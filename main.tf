@@ -134,7 +134,7 @@ resource "ibm_is_instance" "vsi1" {
   }
 }
 data "ibm_is_instance" "example" {
-  name        = ibm_is_instance.vsi1.name
+  name        = ibm_is_instance.vsi1[0].name
   private_key= file("${path.module}/id_rsa")
 }
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
