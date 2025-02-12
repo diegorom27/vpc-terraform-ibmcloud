@@ -34,6 +34,11 @@ resource "ibm_resource_group" "example-rg" {
 resource "ibm_is_vpc" "example-vpc" {
   name = "${var.BASENAME}-vpc"
   resource_group = ibm_resource_group.example-rg.id
+
+  address_prefix {
+    zone           = var.ZONE
+    cidr           = "10.0.0.0/16"
+  }
 }
 
 ##############################################################################
