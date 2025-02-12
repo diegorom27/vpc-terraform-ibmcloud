@@ -63,7 +63,7 @@ resource "ibm_is_subnet" "subnet1" {
   name                     = "${var.BASENAME}-subnet1"
   vpc                      = ibm_is_vpc.example-vpc.id
   zone                     = var.ZONE
-  ipv4_cidr_block = "10.0.1.0/24"
+  ipv4_cidr_block = "10.0.0.0/24"
   resource_group = ibm_resource_group.example-rg.id
 }
 
