@@ -101,10 +101,9 @@ data "ibm_is_images" "available_images" {
 locals {
   windows_server_images = [
     for image in data.ibm_is_images.available_images.images :
-    image if length(regex(".*windows-server-2016.*", image.name)) > 0
+    image if length(regexall(".*windows-server-2016.*", image.name)) > 0
   ]
 }
-
 ##############################################################################
 # Gestión de Claves SSH
 ##############################################################################
