@@ -104,6 +104,7 @@ locals {
     image if length(regexall(".*windows-server-2016.*", image.name)) > 0
   ]
 }
+
 ##############################################################################
 # Gestión de Claves SSH
 ##############################################################################
@@ -138,6 +139,7 @@ data "ibm_is_instance" "windows-instance" {
 }
 output "windows_admin_password" {
   value = data.ibm_is_instance.windows-instance.password
+  sensitive = true
 }
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
   instance = ibm_is_instance.vsi1[0].id
