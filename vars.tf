@@ -47,10 +47,10 @@ variable "subnets" {
     default = [
         {
           name = "subnet-0",
-          cidr = "10.0.0.0/29"
+          cidr = "10.0.0.80/30"
         },{
           name = "subnet-1",
-          cidr = "10.0.0.8/29"
+          cidr = "10.0.0.90/29"
         }
     ]
 }
