@@ -93,8 +93,16 @@ resource "ibm_is_security_group_rule" "ingress_ssh_all" {
 # Image
 ##############################################################################
 
-data "ibm_is_image" "centos" {
-  name = "ibm-centos-7-6-minimal-amd64-1"
+data "ibm_is_images" "available_images" {
+  visibility = "public"
+  status     = "available"
+}
+
+locals {
+  windows_server_images = [
+    for image in data.ibm_is_images.available_images.images :
+    image if length(regex(".*windows-server-2016.*", image.name)) > 0
+  ]
 }
 
 ##############################################################################
@@ -111,16 +119,35 @@ resource "ibm_is_ssh_key" "ssh_key" {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi1" {
+  count = length(local.windows_server_images) > 0 ? 1 : 0
+
   name    = "${var.BASENAME}-vsi1"
   vpc     = ibm_is_vpc.example-vpc.id
   zone    = var.ZONE
   keys    = [ibm_is_ssh_key.ssh_key.id]
-  image   = data.ibm_is_image.centos.id
+  image   = local.windows_server_images[0].id
   profile = "cx2-2x4"
+  private_key= file("${path.module}/id_rsa")
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnet1.id
       security_groups = [ibm_is_security_group.example-sg.id]
+  }
+}
+
+resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
+  instance = ibm_is_instance.vsi1.id
+  name                               = "example-vol-att-1"
+  profile                            = "general-purpose"
+  capacity                           = "20"
+  delete_volume_on_attachment_delete = true
+  delete_volume_on_instance_delete   = true
+  volume_name                        = "example-vol-1"
+
+  timeouts {
+    create = "15m"
+    update = "15m"
+    delete = "15m"
   }
 }
 
