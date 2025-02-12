@@ -113,7 +113,7 @@ resource "ibm_is_instance" "vsi1" {
 
     primary_network_interface {
         subnet          = ibm_is_subnet.subnet1.id
-        security_groups = [ibm_is_security_group.sg1.id]
+        security_groups = [ibm_is_security_group.example-sg.id]
     }
     resource "ibm_is_floating_ip" "fip1" {
         name   = "${local.BASENAME}-fip1"
