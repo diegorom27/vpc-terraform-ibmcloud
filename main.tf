@@ -62,7 +62,7 @@ resource "ibm_is_public_gateway" "example-gateway" {
 ##############################################################################
 
 resource "ibm_is_subnet" "subnets" {
-  for_each = {for vm in var.machines : vm.name => vm }
+  for_each = {for vm in var.subnets : vm.name => vm }
   name                     = each.value.name
   vpc                      = ibm_is_vpc.example-vpc.id
   zone                     = var.ZONE
@@ -134,7 +134,7 @@ resource "ibm_is_instance" "vsi" {
   }
 }
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
-  for_each = { for vm in var.subnets : vm.name => vm }
+  for_each = { for vm in var.machines : vm.name => vm }
   
   instance = ibm_is_instance.vsi[each.key].id
   name     = "${each.value.name}-vol-attachment"
