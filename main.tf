@@ -134,7 +134,10 @@ resource "ibm_is_instance" "vsi1" {
       security_groups = [ibm_is_security_group.example-sg.id]
   }
 }
-
+data "ibm_is_instance" "example" {
+  name        = ibm_is_instance.vsi1.name
+  private_key= file("${path.module}/id_rsa")
+}
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
   instance = ibm_is_instance.vsi1.id
   name                               = "example-vol-att-1"
