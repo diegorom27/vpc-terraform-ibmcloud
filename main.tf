@@ -38,7 +38,7 @@ resource "ibm_is_vpc" "example-vpc" {
 
 resource "ibm_is_vpc_address_prefix" "example-address-prefix" {
   name = "${var.BASENAME}-address-prefix"
-  zone = "us-south-1"
+  zone = var.ZONE
   vpc  = ibm_is_vpc.example-vpc.id
   cidr = "10.0.0.0/24"
 }
@@ -65,7 +65,7 @@ resource "ibm_is_subnet" "subnets" {
   for_each = {for vm in var.machines : vm.name => vm }
   name                     = each.value.name
   vpc                      = ibm_is_vpc.example-vpc.id
-  zone                     = var.zone
+  zone                     = var.ZONE
   ipv4_cidr_block          = each.value.cidr
   resource_group = ibm_resource_group.example-rg.id
 }
