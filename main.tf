@@ -127,7 +127,6 @@ resource "ibm_is_instance" "vsi1" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = local.windows_server_images[0].id
   profile = "cx2-2x4"
-  private_key= file("${path.module}/id_rsa")
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnet1.id
