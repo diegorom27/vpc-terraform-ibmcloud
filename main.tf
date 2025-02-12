@@ -115,9 +115,6 @@ resource "ibm_is_instance" "vsi1" {
       subnet          = ibm_is_subnet.subnet1.id
       security_groups = [ibm_is_security_group.example-sg.id]
   }
-  output "sshcommand" {
-  value = "ssh root@${ibm_is_floating_ip.fip1.address}"
-  }
 }
 
 resource "ibm_is_floating_ip" "fip1" {
