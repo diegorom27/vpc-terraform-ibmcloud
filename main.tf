@@ -138,7 +138,7 @@ data "ibm_is_instance" "example" {
   private_key= file("${path.module}/id_rsa")
 }
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
-  instance = ibm_is_instance.vsi1.id
+  instance = ibm_is_instance.vsi1[0].id
   name                               = "example-vol-att-1"
   profile                            = "general-purpose"
   capacity                           = "20"
