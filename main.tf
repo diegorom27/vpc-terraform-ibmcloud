@@ -67,27 +67,27 @@ resource "ibm_is_subnet" "subnet1" {
 ##############################################################################
 
 resource "ibm_is_security_group" "example-sg" {
-    name = "${var.BASENAME}-sg1"
-    vpc  = ibm_is_vpc.example-vpc.id
+  name = "${var.BASENAME}-sg1"
+  vpc  = ibm_is_vpc.example-vpc.id
 }
 
 # allow all incoming network traffic on port 22
 resource "ibm_is_security_group_rule" "ingress_ssh_all" {
-    group     = ibm_is_security_group.example-sg.id
-    direction = "inbound"
-    remote    = "0.0.0.0/0"
+  group     = ibm_is_security_group.example-sg.id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
 
-    tcp {
-      port_min = 22
-      port_max = 22
-    }
+  tcp {
+    port_min = 22
+    port_max = 22
+  }
 }
 ##############################################################################
 # Image
 ##############################################################################
 
 data "ibm_is_image" "centos" {
-    name = "ibm-centos-7-6-minimal-amd64-1"
+  name = "ibm-centos-7-6-minimal-amd64-1"
 }
 
 ##############################################################################
@@ -104,23 +104,23 @@ resource "ibm_is_ssh_key" "ssh_key" {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi1" {
-    name    = "${var.BASENAME}-vsi1"
-    vpc     = ibm_is_vpc.example-vpc.id
-    zone    = var.ZONE
-    keys    = [ibm_is_ssh_key.ssh_key.id]
-    image   = data.ibm_is_image.centos.id
-    profile = "cx2-2x4"
+  name    = "${var.BASENAME}-vsi1"
+  vpc     = ibm_is_vpc.example-vpc.id
+  zone    = var.ZONE
+  keys    = [ibm_is_ssh_key.ssh_key.id]
+  image   = data.ibm_is_image.centos.id
+  profile = "cx2-2x4"
 
-    primary_network_interface {
-        subnet          = ibm_is_subnet.subnet1.id
-        security_groups = [ibm_is_security_group.example-sg.id]
-    }
-    output "sshcommand" {
-    value = "ssh root@${ibm_is_floating_ip.fip1.address}"
-    }
- }
+  primary_network_interface {
+      subnet          = ibm_is_subnet.subnet1.id
+      security_groups = [ibm_is_security_group.example-sg.id]
+  }
+  output "sshcommand" {
+  value = "ssh root@${ibm_is_floating_ip.fip1.address}"
+  }
+}
 
 resource "ibm_is_floating_ip" "fip1" {
-    name   = "${local.BASENAME}-fip1"
-    target = ibm_is_instance.vsi1.primary_network_interface[0].id
+  name   = "${local.BASENAME}-fip1"
+  target = ibm_is_instance.vsi1.primary_network_interface[0].id
 } 
