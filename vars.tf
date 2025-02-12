@@ -63,7 +63,7 @@ variable machines {
         hProfile= string,
         lProfile= string,
         imageId= string ,
-        subnetIndex = number
+        subnetIndex = string
     }))
     default = [
         {
@@ -72,14 +72,14 @@ variable machines {
           hProfile = "mx2-2x16",
           lProfile = "cx2-2x4",
           imageId = "none",
-          subnetIndex = 0
+          subnetIndex = "subnet-0"
         },{
           name = "COBOCRSDWEB05",
           disksSize    = 127,
           hProfile = "bx2-4x16",
           lProfile = "cx2-2x4",
           imageId = "none",
-          subnetIndex = 1
+          subnetIndex = "subnet-1"
         }
     ]
 }
