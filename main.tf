@@ -96,7 +96,6 @@ data "ibm_is_image" "centos" {
 
 # Cargar la clave pública SSH en IBM Cloud
 resource "ibm_is_ssh_key" "ssh_key" {
-  label      = "terraform-ssh-key" 
   public_key = file("${path.module}/id_rsa.pub")
 }
 ##############################################################################
