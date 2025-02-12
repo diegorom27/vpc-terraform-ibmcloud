@@ -67,14 +67,14 @@ variable machines {
     }))
     default = [
         {
-          name = "COBOCRSPWEB04",
+          name = "test1",
           disksSize    = 150,
           hProfile = "mx2-2x16",
           lProfile = "cx2-2x4",
           imageId = "none",
           subnetIndex = "subnet-0"
         },{
-          name = "COBOCRSDWEB05",
+          name = "test2",
           disksSize    = 127,
           hProfile = "bx2-4x16",
           lProfile = "cx2-2x4",
