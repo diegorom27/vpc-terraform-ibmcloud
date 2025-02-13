@@ -18,8 +18,7 @@ variable ibm_region {
 }
 variable RESOURCE_GROUP {
     type        = string
-    default     = "test-amado"
-  
+    default     = "vpc-demo-rg"
 }
 variable ENABLE_HIGH_PERFORMANCE {
     type        = bool
@@ -35,12 +34,8 @@ variable MACHINES {
     }))
     default = [
         {
-          name = "test1",
+          name = "test-1",
           hProfile = "mx2-2x16",
-          lProfile = "cx2-2x4",
-        },{
-          name = "test2",
-          hProfile = "bx2-4x16",
           lProfile = "cx2-2x4",
         }
     ]

@@ -18,13 +18,20 @@ provider ibm {
     region = var.ibm_region
     max_retries = 20
 }
+##############################################################################
+# Resource Group
+##############################################################################
+
+data "ibm_resource_group" "group" {
+  name = var.RESOURCE_GROUP
+}
 
 ##############################################################################
 # Virtual Server Instance list
 ##############################################################################
 
 data "ibm_is_instances" "ds_instances" {
-  resource_group = var.RESOURCE_GROUP
+  resource_group = data.ibm_resource_group.group.id
 }
 
 ##############################################################################
