@@ -38,4 +38,8 @@ resource "ibm_is_instance" "vsi" {
   image   = data.ibm_is_instances.ds_instances[each.value.name].image
   vpc = data.ibm_is_instances.ds_instances[each.value.name].vpc
   zone = data.ibm_is_instances.ds_instances[each.value.name].zone
+
+  primary_network_attachment {
+    subnet = data.ibm_is_instances.ds_instances[each.value.name].primary_network_interface.subnet
+  }
 }
