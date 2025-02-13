@@ -39,7 +39,8 @@ resource "ibm_is_instance" "vsi" {
   vpc = data.ibm_is_instances.ds_instances[each.value.name].vpc
   zone = data.ibm_is_instances.ds_instances[each.value.name].zone
 
-  primary_network_attachment {
+  primary_network_interface {
     subnet = data.ibm_is_instances.ds_instances[each.value.name].primary_network_interface.subnet
+    security_groups = data.ibm_is_instances.ds_instances[each.value.name].primary_network_interface.security_groups
   }
 }
