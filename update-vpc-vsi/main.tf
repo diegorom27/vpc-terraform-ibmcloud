@@ -34,31 +34,28 @@ data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
 
+
 locals {
+  machines_map = { for m in var.MACHINES : m.name => { hProfile = m.hProfile, lProfile = m.lProfile } }
   instances_map = {
     for instance in data.ibm_is_instances.ds_instances.instances :
-    instance.name => {
+    instance.id =>{
       name = instance.name
-      id   = instance.id
       image = instance.image
       vpc   = instance.vpc
       zone  = instance.zone
       subnet = [for ni in instance.primary_network_interface : ni.subnet][0]
       sec_groups = flatten([for ni in instance.primary_network_interface : ni.security_groups])
-    }
+      hProfile = local.machines_map[instance.name].hProfile
+      lProfile = local.machines_map[instance.name].lProfile
+    }     
     if contains([for m in var.MACHINES : m.name], instance.name)
   }
 }
-locals {
-  instances_map_ids = {
-    for instance in local.instances_map :
-    instance.name => instance.id
-  }
-}
 import {
-  for_each = local.instances_map_ids
-  to = ibm_is_instance.vsi[each.value]
-  id = each.value
+  for_each = keys(local.instances_map)
+  to = ibm_is_instance.vsi[each.key]
+  id = each.key
 }
 
 ##############################################################################
@@ -66,7 +63,7 @@ import {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi" {
-  for_each = { for vm in var.MACHINES : vm.id => vm }
+  for_each = { for vm in var.MACHINES : vm.name => vm }
   name    =  each.value.name
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
   image   = local.instances_map[each.value.name].image
