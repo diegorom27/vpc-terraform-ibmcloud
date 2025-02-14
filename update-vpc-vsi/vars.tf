@@ -1,7 +1,7 @@
 variable ibm_region {
     description = "IBM Cloud region where all resources will be deployed"
     type        = string
-    default = "us-east"
+    default = "us-south"
     validation  {
       error_message = "Must use an IBM Cloud region. Use `ibmcloud regions` with the IBM Cloud CLI to see valid regions."
       condition     = can(
@@ -34,7 +34,7 @@ variable MACHINES {
     }))
     default = [
         {
-          name = "nfs-server-1",
+          name = "test-machine",
           hProfile = "mx2-2x16",
           lProfile = "cx2-2x4",
         }

@@ -31,7 +31,7 @@ data "ibm_resource_group" "group" {
 ##############################################################################
 
 data "ibm_is_instances" "ds_instances" {
-  #resource_group = data.ibm_resource_group.group.id
+  resource_group = data.ibm_resource_group.group.id
 }
 
 
