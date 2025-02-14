@@ -18,7 +18,7 @@ variable ibm_region {
 }
 variable RESOURCE_GROUP {
     type        = string
-    default     = "test-ath"
+    default     = "vpc-demo-rg"
 }
 variable ENABLE_HIGH_PERFORMANCE {
     type        = bool
