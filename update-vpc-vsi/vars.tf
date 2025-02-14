@@ -18,7 +18,7 @@ variable ibm_region {
 }
 variable RESOURCE_GROUP {
     type        = string
-    default     = "vpc-demo-rg"
+    default     = "test-ath"
 }
 variable ENABLE_HIGH_PERFORMANCE {
     type        = bool
@@ -34,7 +34,7 @@ variable MACHINES {
     }))
     default = [
         {
-          name = "test-2",
+          name = "dns-server-local",
           hProfile = "mx2-2x16",
           lProfile = "cx2-2x4",
         }
