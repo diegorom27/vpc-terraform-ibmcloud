@@ -41,7 +41,7 @@ locals {
       image = instance.image
       vpc   = instance.vpc
       zone  = instance.zone
-      subnet = instance.primary_network_interface.subnet
+      subnet = [for ni in instance.primary_network_interfaces : ni.subnet][0]
       sec_groups = flatten([for ni in instance.primary_network_interface : ni.security_groups])
     }
   }
