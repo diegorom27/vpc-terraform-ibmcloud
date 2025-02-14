@@ -53,7 +53,7 @@ locals {
   }
 }
 import {
-  for_each = keys(local.instances_map)
+  for_each = local.instances_map
   to = ibm_is_instance.vsi[each.key]
   id = each.key
 }
@@ -63,17 +63,17 @@ import {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi" {
-  for_each = { for vm in var.MACHINES : vm.name => vm }
+  for_each = { for vm in local.machines_map : vm.id => vm }
   name    =  each.value.name
-  profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  image   = local.instances_map[each.value.name].image
-  vpc = local.instances_map[each.value.name].vpc
-  zone = local.instances_map[each.value.name].zone
+  profile = var.ENABLE_HIGH_PERFORMANCE ? each.value.hProfile : each.value.lProfile
+  image   = each.value.image
+  vpc = each.value.vpc
+  zone = each.value.zone
 
   
   primary_network_interface {
-    subnet = local.instances_map[each.value.name].subnet
-    security_groups = local.instances_map[each.value.name].sec_groups
+    subnet = each.value.subnet
+    security_groups = each.value.sec_groups
   }
   
   lifecycle {
