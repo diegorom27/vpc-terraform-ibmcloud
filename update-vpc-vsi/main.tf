@@ -56,7 +56,7 @@ locals {
 }
 import {
   for_each = local.instances_map_ids
-  to = ibm_is_instance.this[each.key]
+  to = ibm_is_instance.vsi[each.key]
   id = each.value
 }
 
