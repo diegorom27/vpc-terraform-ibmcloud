@@ -41,6 +41,7 @@ locals {
     for instance in data.ibm_is_instances.ds_instances.instances :
     instance.id =>{
       name = instance.name
+      id = instance.id
       image = instance.image
       vpc   = instance.vpc
       zone  = instance.zone
