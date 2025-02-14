@@ -46,7 +46,7 @@ locals {
       subnet = [for ni in instance.primary_network_interface : ni.subnet][0]
       sec_groups = flatten([for ni in instance.primary_network_interface : ni.security_groups])
     }
-    if contains(keys(var.MACHINES), instance.name)
+    if contains([for m in var.MACHINES : m.name], instance.name)
   }
 }
 locals {
