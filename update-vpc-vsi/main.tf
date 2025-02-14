@@ -53,8 +53,17 @@ locals {
     if contains([for m in var.MACHINES : m.name], instance.name)
   }
 }
-output "names" {
+output "instances_map" {
   value = local.instances_map
+}
+output "list" {
+  value = data.ibm_is_instances.ds_instances.instances
+}
+output "machines_map" {
+  value = local.machines_map
+}
+output "machines" {
+  value = var.MACHINES
 }
 import {
   for_each = local.instances_map
