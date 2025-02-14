@@ -64,9 +64,23 @@ resource "null_resource" "import_instance" {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi" {
+  for_each = { for vm in var.MACHINES : vm.name => vm }
+  name    =  each.value.name
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
+  vpc = local.instances_map[each.value.name].vpc
+  zone = local.instances_map[each.value.name].zone
+
+  primary_network_interface {
+    subnet = local.instances_map[each.value.name].subnet
+    security_groups = local.instances_map[each.value.name].sec_groups
+  }
   
   lifecycle {
-    ignore_changes = all
+    ignore_changes = [
+      primary_network_interface,
+      image,
+      keys,
+      primary_network_interface
+    ]
   }
 }
