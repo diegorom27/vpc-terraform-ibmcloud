@@ -34,20 +34,33 @@ data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
 
+locals {
+  instances_map = {
+    for instance in data.ibm_is_instances.ds_instances.instances :
+    instance.name => {
+      image = instance.image
+      vpc   = instance.vpc
+      zone  = instance.zone
+      subnet = instance.primary_network_interface.subnet
+      sec_groups = flatten([for ni in instance.primary_network_interface : ni.security_groups])
+    }
+  }
+}
+
 ##############################################################################
 # Virtual Server Instance
 ##############################################################################
 
 resource "ibm_is_instance" "vsi" {
   for_each = { for vm in var.MACHINES : vm.name => vm }
-  name    =  data.ibm_is_instances.ds_instances[each.value.name]
+  name    =  each.value.name
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  image   = data.ibm_is_instances.ds_instances[each.value.name].image
-  vpc = data.ibm_is_instances.ds_instances[each.value.name].vpc
-  zone = data.ibm_is_instances.ds_instances[each.value.name].zone
+  image   = locals.instances_map[each.value.name].image
+  vpc = locals.instances_map[each.value.name].vpc
+  zone = locals.instances_map[each.value.name].zone
 
   primary_network_interface {
-    subnet = data.ibm_is_instances.ds_instances[each.value.name].primary_network_interface.subnet
-    security_groups = data.ibm_is_instances.ds_instances[each.value.name].primary_network_interface.security_groups
+    subnet = locals.instances_map[each.value.name].subnet
+    security_groups = locals.instances_map[each.value.name].sec_groups
   }
 }
