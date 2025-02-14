@@ -30,6 +30,26 @@ data "ibm_resource_group" "group" {
 # Virtual Server Instance list
 ##############################################################################
 
+resource "null_resource" "fetch_state" {
+  provisioner "local-exec" {
+    command = "ibmcloud schematics state pull --id <workspace_id> > terraform.tfstate"
+  }
+}
+
+locals {
+  terraform_state = jsondecode(file("${path.module}/terraform.tfstate"))
+
+  ibm_instances = [for res in local.terraform_state.resources :
+    res.instances[0].attributes.id
+    if res.type == "ibm_is_instance"
+  ]
+}
+
+output "ibm_instance_ids" {
+  value = local.ibm_instances
+}
+
+
 data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
@@ -47,23 +67,10 @@ locals {
       zone  = instance.zone
       subnet = [for ni in instance.primary_network_interface : ni.subnet][0]
       sec_groups = flatten([for ni in instance.primary_network_interface : ni.security_groups])
-      hProfile = local.machines_map[instance.name].hProfile
-      lProfile = local.machines_map[instance.name].lProfile
+      hProfile   = lookup(local.machines_map, instance.name, null) != null ? local.machines_map[instance.name].hProfile : instance.profile
+      lProfile   = lookup(local.machines_map, instance.name, null) != null ? local.machines_map[instance.name].lProfile : instance.profile
     }     
-    if contains([for m in var.MACHINES : m.name], instance.name)
   }
-}
-output "instances_map" {
-  value = local.instances_map
-}
-output "list" {
-  value = data.ibm_is_instances.ds_instances.instances
-}
-output "machines_map" {
-  value = local.machines_map
-}
-output "machines" {
-  value = var.MACHINES
 }
 import {
   for_each = local.instances_map
@@ -95,7 +102,14 @@ resource "ibm_is_instance" "vsi" {
       image,
       keys,
       vpc,
-      zone
+      zone,
+      name,
+      boot_volume,
+      auto_delete_volume,
+      network_interfaces,
+      resource_group,
+      user_data,
+      volumes
     ]
   }
 }
