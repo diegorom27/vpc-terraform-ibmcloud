@@ -35,25 +35,21 @@ resource "null_resource" "fetch_state" {
     command = "ibmcloud schematics state pull --id us-east.workspace.test-vpc.4781e21c > terraform.tfstate"
   }
 }
-
-locals {
-  terraform_state = jsondecode(file("${path.module}/terraform.tfstate"))
-
-  ibm_instances = [for res in local.terraform_state.resources :
-    res.instances[0].attributes.id
-    if res.type == "ibm_is_instance"
-  ]
-}
-
-output "ibm_instance_ids" {
-  value = local.ibm_instances
-}
-
-
 data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
 
+locals {
+  terraform_state = jsondecode(file("${path.module}/terraform.tfstate"))
+
+  ibm_instances_map = { for res in local.terraform_state.resources :
+    res.instances[0].attributes.id => res.instances[0].attributes
+    if res.type == "ibm_is_instance"
+  }
+  managed_instances_map = { for instance in data.ibm_is_instances.ds_instances.instances :
+    instance.id => instance if lookup(local.ibm_instances_map, instance.id, null) != null
+  }
+}
 
 locals {
   machines_map = { for m in var.MACHINES : m.name => { hProfile = m.hProfile, lProfile = m.lProfile } }
@@ -73,7 +69,7 @@ locals {
   }
 }
 import {
-  for_each = local.instances_map
+  for_each = local.managed_instances_map
   to = ibm_is_instance.vsi[each.key]
   id = each.key
 }
