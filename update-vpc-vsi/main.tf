@@ -66,7 +66,7 @@ import {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi" {
-  for_each = { for vm in var.MACHINES : vm.name => vm }
+  for_each = { for vm in var.MACHINES : vm.id => vm }
   name    =  each.value.name
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
   image   = local.instances_map[each.value.name].image
