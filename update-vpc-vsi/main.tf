@@ -32,7 +32,7 @@ data "ibm_resource_group" "group" {
 
 resource "null_resource" "fetch_state" {
   provisioner "local-exec" {
-    command = "ibmcloud schematics state pull --id <workspace_id> > terraform.tfstate"
+    command = "ibmcloud schematics state pull --id us-east.workspace.test-vpc.4781e21c > terraform.tfstate"
   }
 }
 
