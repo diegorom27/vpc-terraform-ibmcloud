@@ -53,6 +53,9 @@ locals {
     if contains([for m in var.MACHINES : m.name], instance.name)
   }
 }
+output "names" {
+  value = local.instances_map
+}
 import {
   for_each = local.instances_map
   to = ibm_is_instance.vsi[each.key]
