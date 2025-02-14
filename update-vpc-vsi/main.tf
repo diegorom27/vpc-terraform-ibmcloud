@@ -55,12 +55,12 @@ resource "ibm_is_instance" "vsi" {
   for_each = { for vm in var.MACHINES : vm.name => vm }
   name    =  each.value.name
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  image   = locals.instances_map[each.value.name].image
-  vpc = locals.instances_map[each.value.name].vpc
-  zone = locals.instances_map[each.value.name].zone
+  image   = local.instances_map[each.value.name].image
+  vpc = local.instances_map[each.value.name].vpc
+  zone = local.instances_map[each.value.name].zone
 
   primary_network_interface {
-    subnet = locals.instances_map[each.value.name].subnet
-    security_groups = locals.instances_map[each.value.name].sec_groups
+    subnet = local.instances_map[each.value.name].subnet
+    security_groups = local.instances_map[each.value.name].sec_groups
   }
 }
