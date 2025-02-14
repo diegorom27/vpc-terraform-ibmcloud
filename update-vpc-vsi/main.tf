@@ -46,6 +46,7 @@ locals {
       subnet = [for ni in instance.primary_network_interface : ni.subnet][0]
       sec_groups = flatten([for ni in instance.primary_network_interface : ni.security_groups])
     }
+    if contains(keys(var.MACHINES), instance.name)
   }
 }
 locals {
@@ -65,17 +66,17 @@ import {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi" {
-  for_each = { for vm in var.MACHINES : vm.name => vm }
+  for_each = { for vm in local.instances_map : vm.name => vm }
   name    =  each.value.name
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  image   = local.instances_map[each.value.name].image
-  vpc = local.instances_map[each.value.name].vpc
-  zone = local.instances_map[each.value.name].zone
+  image   = each.value.image
+  vpc = each.value.vpc
+  zone = each.value.zone
 
   
   primary_network_interface {
-    subnet = local.instances_map[each.value.name].subnet
-    security_groups = local.instances_map[each.value.name].sec_groups
+    subnet = each.value.subnet
+    security_groups = each.value.sec_groups
   }
   
   lifecycle {
