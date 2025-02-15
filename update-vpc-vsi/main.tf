@@ -47,7 +47,7 @@ locals {
     if res.type == "ibm_is_instance"
   }
   unmanaged_instances_map = { for instance in data.ibm_is_instances.ds_instances.instances :
-    instance.id => instance if lookup(local.ibm_instances_map, instance.id, null) != null
+    instance.id => instance if lookup(local.ibm_instances_map, instance.id, null) == null
   }
 }
 
