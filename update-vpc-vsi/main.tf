@@ -68,6 +68,15 @@ locals {
     }     
   }
 }
+output "terraform_state" {
+  value = local.ibm_instances_map
+}
+output "all_instances" {
+  value = local.data.ibm_is_instances.ds_instances.instances
+}
+output "non_terraform_instances" {
+  value = local.managed_instances_map
+}
 import {
   for_each = local.managed_instances_map
   to = ibm_is_instance.vsi[each.key]
