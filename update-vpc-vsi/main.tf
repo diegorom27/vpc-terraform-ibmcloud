@@ -72,7 +72,7 @@ output "terraform_state" {
   value = local.ibm_instances_map
 }
 output "all_instances" {
-  value = local.data.ibm_is_instances.ds_instances.instances
+  value = data.ibm_is_instances.ds_instances.instances
 }
 output "non_terraform_instances" {
   value = local.managed_instances_map
