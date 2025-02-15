@@ -46,10 +46,23 @@ locals {
     res.instances[0].attributes.id => res.instances[0].attributes
     if res.type == "ibm_is_instance"
   }
-  managed_instances_map = { for instance in data.ibm_is_instances.ds_instances.instances :
+  unmanaged_instances_map = { for instance in data.ibm_is_instances.ds_instances.instances :
     instance.id => instance if lookup(local.ibm_instances_map, instance.id, null) != null
   }
 }
+
+output "unmanaged_instances" {
+  value = keys(local.unmanaged_instances_map)
+}
+output "managed_instances" {
+  value = keys(local.ibm_instances_map)
+}
+import {
+  for_each = local.unmanaged_instances_map
+  to = ibm_is_instance.vsi[each.key]
+  id = each.key
+}
+
 
 locals {
   machines_map = { for m in var.MACHINES : m.name => { hProfile = m.hProfile, lProfile = m.lProfile } }
@@ -68,21 +81,10 @@ locals {
     }     
   }
 }
-output "terraform_state" {
-  value = local.ibm_instances_map
+output "instances_map" {
+  value = keys(local.instances_map)
+  
 }
-output "all_instances" {
-  value = data.ibm_is_instances.ds_instances.instances
-}
-output "non_terraform_instances" {
-  value = local.managed_instances_map
-}
-import {
-  for_each = local.managed_instances_map
-  to = ibm_is_instance.vsi[each.key]
-  id = each.key
-}
-
 ##############################################################################
 # Virtual Server Instance
 ##############################################################################
