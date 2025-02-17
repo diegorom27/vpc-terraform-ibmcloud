@@ -42,10 +42,11 @@ data "ibm_is_instances" "ds_instances" {
 locals {
   terraform_state = jsondecode(file("${path.module}/terraform.tfstate"))
 
-  ibm_instances_map = { for res in local.terraform_state.resources :
+ibm_instances_map = { 
+  for res in local.terraform_state.resources : 
     res.instances[0].attributes.id => res.instances[0].attributes
-    if res.type == "ibm_is_instance"
-  }
+  if res.type == "ibm_is_instance" && res.instances[0].attributes.resource_group == data.ibm_resource_group.group.id
+}
   unmanaged_instances_map = { for instance in data.ibm_is_instances.ds_instances.instances :
     instance.id => instance if lookup(local.ibm_instances_map, instance.id, null) == null
   }
