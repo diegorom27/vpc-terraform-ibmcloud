@@ -26,7 +26,7 @@ variable ENABLE_HIGH_PERFORMANCE {
 }
 variable WORKSPACE_ID {
     type        = string  
-    default = "us-east.workspace.test-vpc.4781e21c"
+    default = "us-south.workspace.vpc-test.643cd01d"
 }
 variable MACHINES {
     description = "List of vm for control plane"
