@@ -43,8 +43,8 @@ locals {
   terraform_state = jsondecode(file("${path.module}/terraform.tfstate"))
 
   ibm_instances_map = { for res in local.terraform_state.resources :
-    res.instances.attributes.id => res.instances.attributes
-    if res.type == "ibm_is_instance"  && res.instances.attributes.resource_group == data.ibm_resource_group.group.id
+    res.instances[0].attributes.id => res.instances[0].attributes
+    if res.type == "ibm_is_instance"  
   }
   unmanaged_instances_map = { for instance in data.ibm_is_instances.ds_instances.instances :
     instance.id => instance if lookup(local.ibm_instances_map, instance.id, null) == null
@@ -52,7 +52,7 @@ locals {
 }
 
 output "all_machinnes_state" {
-  value = local.ibm_instances_map
+  value = local.terraform_state
 }
 
 output "unmanaged_instances" {
