@@ -51,10 +51,6 @@ locals {
   }
 }
 
-output "all_machinnes_state" {
-  value = local.terraform_state
-}
-
 output "unmanaged_instances" {
   value = keys(local.unmanaged_instances_map)
 }
