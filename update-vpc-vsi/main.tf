@@ -32,28 +32,25 @@ data "ibm_resource_group" "group" {
 
 resource "null_resource" "fetch_state" {
   provisioner "local-exec" {
-    command = "ibmcloud schematics state pull --id ${var.WORKSPACE_ID} > terraform.tfstate"
+    command ="ibmcloud schematics state list --id ${var.WORKSPACE_ID} --output json | jq '[.[] | .resources[] | {resource_type, resource_name, resource_id,resource_group_name}]' > state.json "
   }
 }
 data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
 
-locals {
-  terraform_state = jsondecode(file("${path.module}/terraform.tfstate"))
+locals {  
+  terraform_state = jsondecode(file("${path.module}/state.json"))
 
-  ibm_instances_map = { for res in local.terraform_state.resources :
-    res.instances[0].attributes.id => res.instances[0].attributes
-    if res.type == "ibm_is_instance"
+  ibm_instances_map = { for res in local.terraform_state :
+    res.resource_id => res
+    if res.resource_type == "ibm_is_instance" && res.resource_group_name == data.ibm_resource_group.group.name
   }
   unmanaged_instances_map = { for instance in data.ibm_is_instances.ds_instances.instances :
     instance.id => instance if lookup(local.ibm_instances_map, instance.id, null) == null
   }
 }
 
-output "unmanaged_instances" {
-  value = keys(local.unmanaged_instances_map)
-}
 output "managed_instances" {
   value = keys(local.ibm_instances_map)
 }
