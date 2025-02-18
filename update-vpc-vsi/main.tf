@@ -29,27 +29,33 @@ data "ibm_resource_group" "group" {
 ##############################################################################
 # Virtual Server Instance list
 ##############################################################################
-resource "null_resource" "fetch_state" {
-  provisioner "local-exec" {
-    command = <<EOT
-      # Ejecuta el comando y almacena la salida en una variable
-      state_json=$(ibmcloud schematics state list --id us-south.workspace.vpc-test.643cd01d --output json | jq '[.[] | select(.resources != null) | .resources[] | {resource_type, resource_name, resource_id, resource_group_name}]')
-      echo $state_json > ./state.json  # Si necesitas volcar la salida a un archivo en caso de depuración
-    EOT
-  }
-}
 
 #resource "null_resource" "fetch_state" {
 #  provisioner "local-exec" {
 #    command ="ibmcloud schematics state list --id us-south.workspace.vpc-test.643cd01d --output json | jq '[.[] | select(.resources != null) | .resources[] | {resource_type, resource_name, resource_id, resource_group_name}]' > state.json"
 #  }
 #}
-data "ibm_is_instances" "ds_instances" {
-  resource_group = data.ibm_resource_group.group.id
+
+#data "ibm_is_instances" "ds_instances" {
+#  resource_group = data.ibm_resource_group.group.id
+#}
+
+#data "local_file" "terraform_state_file" {
+#  depends_on = [null_resource.fetch_state]
+#  filename   = "${path.module}/state.json"
+#}
+
+data "external" "fetch_state" {
+  program = ["bash", "${path.module}/fetch_state.sh"]
+
+  # Proporciona variables si es necesario
+  # query = {
+  #   some_key = "some_value"
+  # }
 }
 
 locals {  
-  terraform_state = jsondecode(null_resource.fetch_state.provisioner[0].command)
+  terraform_state = jsondecode(data.external.fetch_state.result)
 
   ibm_instances_map = { for res in local.terraform_state :
     res.resource_id => res
