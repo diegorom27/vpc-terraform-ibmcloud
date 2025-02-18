@@ -55,7 +55,7 @@ data "external" "fetch_state" {
 }
 
 locals {  
-  terraform_state = jsondecode(data.external.fetch_state.result)
+  terraform_state = jsondecode(data.external.fetch_state.result["state"])
 
   ibm_instances_map = { for res in local.terraform_state :
     res.resource_id => res
