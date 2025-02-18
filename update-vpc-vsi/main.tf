@@ -59,10 +59,22 @@ locals {
 output "managed_instances" {
   value = keys(local.ibm_instances_map)
 }
-import {
-  for_each = local.unmanaged_instances_map
-  to = ibm_is_instance.vsi[each.key]
-  id = each.key
+#import {
+#  for_each = local.unmanaged_instances_map
+#  to = ibm_is_instance.vsi[each.key]
+#  id = each.key
+#}
+
+resource "null_resource" "delayed_import" {
+  depends_on = [data.local_file.terraform_state_file]
+
+  provisioner "local-exec" {
+    command = <<EOT
+      for id in ${join(" ", keys(local.unmanaged_instances_map))}; do
+        terraform import ibm_is_instance.vsi[$id] $id
+      done
+    EOT
+  }
 }
 
 
