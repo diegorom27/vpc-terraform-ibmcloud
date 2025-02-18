@@ -39,15 +39,13 @@ data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
 
-resource "null_resource" "process_state" {
+data "local_file" "terraform_state_file" {
   depends_on = [null_resource.fetch_state]
-  provisioner "local-exec" {
-    command = "echo 'Processing internal state file.'"
-  }
+  filename   = "${path.module}/state.json"
 }
 
 locals {  
-  terraform_state = jsondecode(file("${path.module}/state.json"))
+  terraform_state = jsondecode(data.local_file.terraform_state_file.content)
 
   ibm_instances_map = { for res in local.terraform_state :
     res.resource_id => res
