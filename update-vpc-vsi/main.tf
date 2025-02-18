@@ -104,6 +104,7 @@ output "instances_map" {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi" {
+  depends_on = [null_resource.delayed_import] 
   for_each = { for vm in local.instances_map : vm.id => vm }
   name    =  each.value.name
   profile = var.ENABLE_HIGH_PERFORMANCE ? each.value.hProfile : each.value.lProfile
