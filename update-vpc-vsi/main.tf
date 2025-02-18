@@ -38,14 +38,18 @@ resource "null_resource" "fetch_state" {
 data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
-
-data "local_file" "terraform_state_file" {
-  depends_on = [null_resource.fetch_state]
-  filename   = "${path.module}/state.json"
+resource "null_resource" "fetch_state" {
+  provisioner "local-exec" {
+    command = <<EOT
+      # Ejecuta el comando y almacena la salida en una variable
+      state_json=$(ibmcloud schematics state list --id us-south.workspace.vpc-test.643cd01d --output json | jq '[.[] | select(.resources != null) | .resources[] | {resource_type, resource_name, resource_id, resource_group_name}]')
+      echo $state_json > ./state.json  # Si necesitas volcar la salida a un archivo en caso de depuración
+    EOT
+  }
 }
 
 locals {  
-  terraform_state = jsondecode(data.local_file.terraform_state_file.content)
+  terraform_state = jsondecode(null_resource.fetch_state.provisioner[0].command)
 
   ibm_instances_map = { for res in local.terraform_state :
     res.resource_id => res
@@ -64,9 +68,15 @@ output "managed_instances" {
 #  to = ibm_is_instance.vsi[each.key]
 #  id = each.key
 #}
+resource "null_resource" "check_file" {
+  provisioner "local-exec" {
+    command = "if [ -f ./state.json ]; then echo 'File exists'; else echo 'File does not exist'; fi"
+  }
 
+  depends_on = [null_resource.fetch_state]
+}
 resource "null_resource" "delayed_import" {
-  depends_on = [data.local_file.terraform_state_file]
+  depends_on = [null_resource.check_file]
 
   provisioner "local-exec" {
     command = <<EOT
