@@ -34,20 +34,20 @@ data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
 
-#import {
-#  for_each = data.ibm_is_instances.ds_instances.instances
-#  to = ibm_is_instance.vsi[each.id]
-#  id = each.id
-#}
-
-resource "null_resource" "import_instances" {
-  depends_on = [data.ibm_is_instances.ds_instances]
+import {
   for_each = { for instance in data.ibm_is_instances.ds_instances.instances : instance.id => instance }
-
-  provisioner "local-exec" {
-    command = "terraform import ibm_is_instance.vsi[${each.key}] ${each.key}"
-  }
+  to       = ibm_is_instance.vsi[each.key]
+  id       = each.key
 }
+
+#resource "null_resource" "import_instances" {
+#  depends_on = [data.ibm_is_instances.ds_instances]
+#  for_each = { for instance in data.ibm_is_instances.ds_instances.instances : instance.id => instance }
+#
+#  provisioner "local-exec" {
+#    command = "terraform import ibm_is_instance.vsi[${each.key}] ${each.key}"
+#  }
+#}
 
 locals {
   machines_map = { for m in var.MACHINES : m.name => { hProfile = m.hProfile, lProfile = m.lProfile } }
@@ -75,7 +75,7 @@ output "instances_map" {
 ##############################################################################
 
 resource "ibm_is_instance" "vsi" { 
-  depends_on = [ null_resource.import_instances ]
+  #depends_on = [ null_resource.import_instances ]
   for_each = { for vm in local.instances_map : vm.id => vm }
   name    =  each.value.name
   profile = var.ENABLE_HIGH_PERFORMANCE ? each.value.hProfile : each.value.lProfile
