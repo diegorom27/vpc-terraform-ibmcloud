@@ -37,7 +37,7 @@ variable MACHINES {
     }))
     default = [
         {
-          name = "test-machine",
+          name = "test-machine-1",
           hProfile = "mx2-2x16",
           lProfile = "cx2-2x4",
         }
