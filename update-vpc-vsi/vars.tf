@@ -24,10 +24,6 @@ variable ENABLE_HIGH_PERFORMANCE {
     type        = bool
     default     = false
 }
-variable WORKSPACE_ID {
-    type        = string  
-    default = "us-south.workspace.vpc-test.643cd01d"
-}
 variable MACHINES {
     description = "List of vm for control plane"
     type = list(object({
