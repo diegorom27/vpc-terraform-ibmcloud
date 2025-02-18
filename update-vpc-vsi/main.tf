@@ -29,15 +29,6 @@ data "ibm_resource_group" "group" {
 ##############################################################################
 # Virtual Server Instance list
 ##############################################################################
-
-resource "null_resource" "fetch_state" {
-  provisioner "local-exec" {
-    command ="ibmcloud schematics state list --id us-south.workspace.vpc-test.643cd01d --output json | jq '[.[] | select(.resources != null) | .resources[] | {resource_type, resource_name, resource_id, resource_group_name}]' > state.json"
-  }
-}
-data "ibm_is_instances" "ds_instances" {
-  resource_group = data.ibm_resource_group.group.id
-}
 resource "null_resource" "fetch_state" {
   provisioner "local-exec" {
     command = <<EOT
@@ -46,6 +37,15 @@ resource "null_resource" "fetch_state" {
       echo $state_json > ./state.json  # Si necesitas volcar la salida a un archivo en caso de depuración
     EOT
   }
+}
+
+#resource "null_resource" "fetch_state" {
+#  provisioner "local-exec" {
+#    command ="ibmcloud schematics state list --id us-south.workspace.vpc-test.643cd01d --output json | jq '[.[] | select(.resources != null) | .resources[] | {resource_type, resource_name, resource_id, resource_group_name}]' > state.json"
+#  }
+#}
+data "ibm_is_instances" "ds_instances" {
+  resource_group = data.ibm_resource_group.group.id
 }
 
 locals {  
