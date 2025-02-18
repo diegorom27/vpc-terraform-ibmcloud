@@ -32,7 +32,7 @@ data "ibm_resource_group" "group" {
 
 resource "null_resource" "fetch_state" {
   provisioner "local-exec" {
-    command ="ibmcloud schematics state list --id ${var.WORKSPACE_ID} --output json | jq '[.[] | .resources[] | {resource_type, resource_name, resource_id,resource_group_name}]' > state.json "
+    command ="ibmcloud schematics state list --id us-south.workspace.vpc-test.643cd01d --output json | jq '[.[] | select(.resources != null) | .resources[] | {resource_type, resource_name, resource_id, resource_group_name}]' > state.json"
   }
 }
 data "ibm_is_instances" "ds_instances" {
