@@ -30,55 +30,27 @@ data "ibm_resource_group" "group" {
 # Virtual Server Instance list
 ##############################################################################
 
-resource "null_resource" "fetch_state" {
-  provisioner "local-exec" {
-    command ="ibmcloud schematics state list --id us-south.workspace.vpc-test.643cd01d --output json | jq '[.[] | select(.resources != null) | .resources[] | {resource_type, resource_name, resource_id, resource_group_name}]' > state.json"
-  }
-}
-
-resource "null_resource" "check_file" {
-  provisioner "local-exec" {
-    command = "if [ -f ./state.json ]; then echo 'File exists'; else echo 'File does not exist'; fi"
-  }
-
-  depends_on = [null_resource.fetch_state]
-}
 data "ibm_is_instances" "ds_instances" {
   resource_group = data.ibm_resource_group.group.id
 }
 
-data "local_file" "terraform_state_file" {
-  depends_on = [null_resource.check_file]
-  filename   = "${path.module}/state.json"
+import {
+  for_each = data.ibm_is_instances.ds_instances.instances
+  to = ibm_is_instance.vsi[each.id]
+  id = each.id
 }
 
-locals {  
-  terraform_state = jsondecode(data.local_file.terraform_state_file.content)
-
-  ibm_instances_map = { for res in local.terraform_state :
-    res.resource_id => res
-    if res.resource_type == "ibm_is_instance" && res.resource_group_name == data.ibm_resource_group.group.name
-  }
-  unmanaged_instances_map = { for instance in data.ibm_is_instances.ds_instances.instances :
-    instance.id => instance if lookup(local.ibm_instances_map, instance.id, null) == null
-  }
-}
-
-output "managed_instances" {
-  value = keys(local.ibm_instances_map)
-}
-
-resource "null_resource" "delayed_import" {
-  depends_on = [null_resource.check_file]
-
-  provisioner "local-exec" {
-    command = <<EOT
-      for id in ${join(" ", keys(local.unmanaged_instances_map))}; do
-        terraform import ibm_is_instance.vsi[$id] $id
-      done
-    EOT
-  }
-}
+#resource "null_resource" "delayed_import" {
+#  depends_on = [data.ibm_is_instances.ds_instances]
+#
+#  provisioner "local-exec" {
+#    command = <<EOT
+#      for id in ${join(" ", keys(local.unmanaged_instances_map))}; do
+#        terraform import ibm_is_instance.vsi[$id] $id
+#      done
+#    EOT
+#  }
+#}
 
 
 locals {
