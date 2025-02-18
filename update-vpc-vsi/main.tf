@@ -36,9 +36,9 @@ data "ibm_resource_group" "group" {
 #  }
 #}
 
-#data "ibm_is_instances" "ds_instances" {
-#  resource_group = data.ibm_resource_group.group.id
-#}
+data "ibm_is_instances" "ds_instances" {
+  resource_group = data.ibm_resource_group.group.id
+}
 
 #data "local_file" "terraform_state_file" {
 #  depends_on = [null_resource.fetch_state]
@@ -74,15 +74,9 @@ output "managed_instances" {
 #  to = ibm_is_instance.vsi[each.key]
 #  id = each.key
 #}
-resource "null_resource" "check_file" {
-  provisioner "local-exec" {
-    command = "if [ -f ./state.json ]; then echo 'File exists'; else echo 'File does not exist'; fi"
-  }
 
-  depends_on = [null_resource.fetch_state]
-}
 resource "null_resource" "delayed_import" {
-  depends_on = [null_resource.check_file]
+  depends_on = [data.external.fetch_state]
 
   provisioner "local-exec" {
     command = <<EOT
