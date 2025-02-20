@@ -47,7 +47,7 @@ variable "subnets" {
         name = "subnet-0",
         cidr = "10.241.0.0/24",
         zone = "us-east-1",
-        prefix="10.241.0.0/18	"
+        prefix="10.241.0.0/18"
       },
       {
         name = "subnet-1",
