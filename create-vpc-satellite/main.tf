@@ -40,14 +40,22 @@ data "ibm_resource_group" "example-rg" {
 resource "ibm_is_vpc" "example-vpc" {
   name = "${var.BASENAME}-vpc"
   resource_group = data.ibm_resource_group.example-rg.id
+  address_prefix_management = "manual"
+
+  timeouts {
+    create = "5m"
+    delete = "5m"
+  }
 }
 
 resource "ibm_is_vpc_address_prefix" "example-address-prefix" {
   for_each = {for vm in var.subnets : vm.name => vm }
-  name = "${var.BASENAME}-address-prefix"
+  name = "address-prefix-${each.value.zone}"
   zone = each.value.zone
   vpc  = ibm_is_vpc.example-vpc.id
   cidr = each.value.prefix
+
+  depends_on = [ ibm_is_vpc.example-vpc ]
 }
 
 ##############################################################################
@@ -63,6 +71,8 @@ resource "ibm_is_public_gateway" "example-gateway" {
   timeouts {
     create = "90m"
   }
+  
+  depends_on = [ ibm_is_vpc.example-vpc ]
 }
 ##############################################################################
 # subnet 
