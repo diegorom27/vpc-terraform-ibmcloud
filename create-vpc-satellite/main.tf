@@ -30,8 +30,12 @@ data "ibm_resource_group" "example-rg" {
 # Satellite script
 ##############################################################################
 
+data "local_file" "test_file" {
+  filename = "${abspath(path.module)}/file.txt"
+}
+
 data "local_file" "ignition_config" {
-  filename = "${path.module}/attachHost-satellite-location.ign"
+  filename = "${abspath(path.module)}/attachHost-satellite-location.ign"
 }
 
 ##############################################################################
