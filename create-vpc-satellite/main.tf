@@ -139,7 +139,7 @@ resource "ibm_is_instance" "control_plane" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data =  file("${path.module}/attachHost-satellite-location-1.ign")
+  user_data =  base64decode(file("${abspath(path.module)}/attachHost-satellite-location.b64"))
   resource_group = data.ibm_resource_group.example-rg.id
 
   primary_network_interface {
@@ -180,7 +180,7 @@ resource "ibm_is_instance" "worker" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data =  file("${path.module}/attachHost-satellite-location-1.ign")
+  user_data =  base64decode(file("${abspath(path.module)}/attachHost-satellite-location.b64"))
   resource_group = data.ibm_resource_group.example-rg.id
 
 
