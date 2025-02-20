@@ -168,7 +168,7 @@ resource "ibm_is_instance" "control_plane" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data =  local_file.ignition_ign.content
+  user_data =  file("${path.module}/attachHost-satellite-location.sh")
   resource_group = data.ibm_resource_group.example-rg.id
 
   primary_network_interface {
@@ -209,7 +209,7 @@ resource "ibm_is_instance" "worker" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data =  local_file.ignition_ign.content
+  user_data =  file("${path.module}/attachHost-satellite-location.sh")
   resource_group = data.ibm_resource_group.example-rg.id
 
 
@@ -226,7 +226,7 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
   delete_volume_on_instance_delete = true
   capacity = each.value.disksSize
   profile                            = "general-purpose"
-  delete_volume_on_attachment_delete = true
+  delete_volume_on_attachment_delete = true 
   volume_name                        = "${each.value.name}-vol-1"
 
   timeouts {

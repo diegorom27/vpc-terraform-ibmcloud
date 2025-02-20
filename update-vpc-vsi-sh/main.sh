@@ -30,7 +30,6 @@ result=$(echo "$machine_configs" | jq --argjson ids "$machine_ids" '
 
 echo "$result" | jq -c '.[] | select(.id != null)' | while read instance; do
 
-
   instance_id=$(echo "$instance" | jq -r '.id')
   instance_name=$(echo "$instance" | jq -r '.name')
   hProfile=$(echo "$instance" | jq -r '.hProfile')

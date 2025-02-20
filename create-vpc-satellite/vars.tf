@@ -66,7 +66,7 @@ variable "subnets" {
 variable "image-coreos" {
     description = "CoreOS image ID"
     type        = string
-    default     = "r006-a7fc4467-cc80-4acb-9007-5449c5ea536c"
+    default     = "r006-1f8aa558-5a97-4e31-a43f-75cc97e0aeae"
 }
 variable control_plane {
     description = "List of vm for control plane"
