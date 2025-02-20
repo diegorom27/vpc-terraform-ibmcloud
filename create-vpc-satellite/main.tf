@@ -30,10 +30,11 @@ data "ibm_resource_group" "example-rg" {
 # Satellite script
 ##############################################################################
 
-
 data "local_file" "ignition_config" {
-  filename = "${abspath(path.module)}/test.ign"
+  filename = "ignition-config.ign"
+  content = base64decode(file("${abspath(path.module)}/attachHost-satellite-location.b64"))
 }
+
 
 ##############################################################################
 # VPC
