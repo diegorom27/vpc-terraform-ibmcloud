@@ -65,7 +65,7 @@ resource "ibm_is_vpc_address_prefix" "example-address-prefix" {
 resource "ibm_is_public_gateway" "example-gateway" {
   name = "${var.BASENAME}-gateway"
   vpc  = ibm_is_vpc.example-vpc.id
-  zone = "us-east-1"
+  zone = "us-south-1"
   resource_group = data.ibm_resource_group.example-rg.id
 
   timeouts {
