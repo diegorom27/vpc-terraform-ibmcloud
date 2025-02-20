@@ -25,10 +25,16 @@ provider ibm {
 locals {
   subnets_map = { for s in var.subnets : s.name => s }
 }
-resource "local_file" "ignition_ign" {
-  filename = "${path.module}/config.ign"
-  content  = file("${abspath(path.module)}/attachHost-satellite-location.txt")
-}
+
+# test to try to use an ignition file with schematics
+## dont work(it could be a problem with fedora coreos img or the change of file extension)
+## Schematics does not support the ignition file extension
+## the recommended way is to use terraform without schematics
+#resource "local_file" "ignition_ign" {
+#  filename = "${path.module}/config.ign"
+#  content  = file("${abspath(path.module)}/attachHost-satellite-location.txt")
+#}
+
 ##############################################################################
 # Resource Group
 ##############################################################################
@@ -36,6 +42,7 @@ resource "local_file" "ignition_ign" {
 data "ibm_resource_group" "example-rg" {
   name = var.resource_group
 }
+
 ##############################################################################
 # VPC
 ##############################################################################

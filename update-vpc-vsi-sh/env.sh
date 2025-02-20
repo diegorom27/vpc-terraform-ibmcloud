@@ -1,6 +1,6 @@
-export APIKEY="EtbR4OUlnKnt6PtBhGDLFhmMzY69IlmvexSABf4KxLjr"
+export APIKEY="apikey"
 export REGION="us-south"
-export RESOURCE_GROUP_NAME="vpc-demo-rg"
+export RESOURCE_GROUP_NAME="example-rg"
 export VPC_API_ENDPOINT="https://us-south.iaas.cloud.ibm.com/v1"
 export ENABLE_HIGH_PERFORMANCE="true"  
 
