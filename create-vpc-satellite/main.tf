@@ -135,7 +135,7 @@ resource "ibm_is_instance" "control_plane" {
   for_each = { for vm in var.control_plane : vm.name => vm }
   name    =  each.value.name
   vpc     = ibm_is_vpc.example-vpc.id
-  zone    = var.ZONE
+  zone    = var.subnets[each.value.subnetIndex].zone
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
@@ -176,7 +176,7 @@ resource "ibm_is_instance" "worker" {
   for_each = { for vm in var.worker : vm.name => vm }
   name    =  each.value.name
   vpc     = ibm_is_vpc.example-vpc.id
-  zone    = var.ZONE
+  zone    = var.subnets[each.value.subnetIndex].zone
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
