@@ -24,7 +24,7 @@ provider ibm {
 ##############################################################################
 
 data "ibm_resource_group" "example-rg" {
-  name = "${var.BASENAME}-resource-group"
+  name = var.resource_group
 }
 
 ##############################################################################

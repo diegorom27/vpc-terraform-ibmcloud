@@ -16,9 +16,14 @@ variable ibm_region {
       )
     }
 }
+variable "resource_group" {
+    description = "Resource group to create resources in"
+    type        = string
+    default     = "satellite-demo-rg"
+}
 variable BASENAME {
     type        = string
-    default     = "test-amado"
+    default     = "satellite-demo"
   
 }
 variable datacenter {
