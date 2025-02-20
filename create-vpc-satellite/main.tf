@@ -73,6 +73,10 @@ resource "ibm_is_public_gateway" "example-gateway" {
   }
   
   depends_on = [ ibm_is_vpc.example-vpc ]
+
+  timeouts {
+      create = "90m"
+  }
 }
 ##############################################################################
 # subnet 
@@ -97,6 +101,8 @@ resource "ibm_is_subnet" "subnets" {
 resource "ibm_is_security_group" "example-sg" {
   name = "${var.BASENAME}-sg1"
   vpc  = ibm_is_vpc.example-vpc.id
+
+  depends_on = [ ibm_is_vpc.example-vpc ]
 }
 
 # allow all incoming network traffic on port 22
@@ -104,7 +110,7 @@ resource "ibm_is_security_group_rule" "ingress_ssh_all" {
   group     = ibm_is_security_group.example-sg.id
   direction = "inbound"
   remote    = "0.0.0.0/0"
-
+  depends_on = [ ibm_is_security_group.example-sg ]
   tcp {
     port_min = 22
     port_max = 22
@@ -114,6 +120,7 @@ resource "ibm_is_security_group_rule" "tcp_rule" {
   group      = ibm_is_security_group.example-sg.id
   direction  = "inbound"
   remote     = "0.0.0.0/0"
+  depends_on = [ ibm_is_security_group.example-sg ]
   tcp {
   }
 }
@@ -121,6 +128,7 @@ resource "ibm_is_security_group_rule" "udp_rule" {
   group      = ibm_is_security_group.example-sg.id
   direction  = "inbound"
   remote     = "0.0.0.0/0"
+  depends_on = [ ibm_is_security_group.example-sg ]
   udp {
   }
 }
@@ -128,6 +136,7 @@ resource "ibm_is_security_group_rule" "icmp_rule" {
   group     = ibm_is_security_group.example-sg.id
   direction = "inbound"
   remote    = "0.0.0.0/0"
+  depends_on = [ ibm_is_security_group.example-sg ]
   icmp {
   }
 }
@@ -135,6 +144,7 @@ resource "ibm_is_security_group_rule" "egress_rule_all" {
   group     = ibm_is_security_group.example-sg.id
   direction = "outbound"
   remote    = "0.0.0.0/0"
+  depends_on = [ ibm_is_security_group.example-sg ]
 }
 
 ##############################################################################

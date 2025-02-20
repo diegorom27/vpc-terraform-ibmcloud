@@ -1,7 +1,7 @@
 variable ibm_region {
     description = "IBM Cloud region where all resources will be deployed"
     type        = string
-    default = "us-east"
+    default = "us-south"
     validation  {
       error_message = "Must use an IBM Cloud region. Use `ibmcloud regions` with the IBM Cloud CLI to see valid regions."
       condition     = can(
@@ -46,19 +46,19 @@ variable "subnets" {
       {
         name = "subnet-0",
         cidr = "10.241.0.0/24",
-        zone = "us-east-1",
+        zone = "us-south-1",
         prefix="10.241.0.0/18"
       },
       {
         name = "subnet-1",
         cidr = "10.241.64.0/24",
-        zone = "us-east-2"
+        zone = "us-south-2"
         prefix="10.241.64.0/18"
       },
       {
         name = "subnet-2",
         cidr = "10.241.128.0/24",
-        zone = "us-east-3"
+        zone = "us-south-3"
         prefix="10.241.128.0/18"
       }
     ]
