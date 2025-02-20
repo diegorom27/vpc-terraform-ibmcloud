@@ -46,7 +46,7 @@ resource "ibm_is_vpc_address_prefix" "example-address-prefix" {
   name = "${var.BASENAME}-address-prefix"
   zone = each.value.zone
   vpc  = ibm_is_vpc.example-vpc.id
-  cidr = each.value.cidr
+  cidr = each.value.prefix
 }
 
 ##############################################################################

@@ -39,23 +39,27 @@ variable "subnets" {
     type = list(object({
         name = string,
         cidr = string,
-        zone = string
+        zone = string,
+        prefix = string
     }))
     default = [
       {
         name = "subnet-0",
-        cidr = "10.0.0.16/28",
-        zone = "us-east-1"
+        cidr = "10.241.0.0/24",
+        zone = "us-east-1",
+        prefix="10.241.0.0/18	"
       },
       {
         name = "subnet-1",
-        cidr = "10.0.0.32/28",
+        cidr = "10.241.64.0/24",
         zone = "us-east-2"
+        prefix="10.241.64.0/18"
       },
       {
         name = "subnet-2",
-        cidr = "10.0.0.32/28",
+        cidr = "10.241.128.0/24",
         zone = "us-east-3"
+        prefix="10.241.128.0/18"
       }
     ]
 }
