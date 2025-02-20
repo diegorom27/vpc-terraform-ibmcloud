@@ -214,7 +214,7 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
 }
 
 resource "ibm_is_floating_ip" "fip_worker" {
-  for_each = { for vm in var.control_plane : vm.name => vm }
+  for_each = { for vm in var.worker : vm.name => vm }
   name   = "${var.BASENAME}-fip-${each.value.name}"
   target = ibm_is_instance.worker["${each.value.name}"].primary_network_interface[0].id
   resource_group = data.ibm_resource_group.example-rg.id
