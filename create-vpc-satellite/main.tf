@@ -73,10 +73,6 @@ resource "ibm_is_public_gateway" "example-gateway" {
   }
   
   depends_on = [ ibm_is_vpc.example-vpc ]
-
-  timeouts {
-      create = "90m"
-  }
 }
 ##############################################################################
 # subnet 
