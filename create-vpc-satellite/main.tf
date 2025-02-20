@@ -25,7 +25,10 @@ provider ibm {
 locals {
   subnets_map = { for s in var.subnets : s.name => s }
 }
-
+resource "local_file" "ignition_ign" {
+  filename = "${path.module}/config.ign"
+  content  = file("${abspath(path.module)}/attachHost-satellite-location.txt")
+}
 ##############################################################################
 # Resource Group
 ##############################################################################
@@ -165,7 +168,7 @@ resource "ibm_is_instance" "control_plane" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data =  file("${abspath(path.module)}/attachHost-satellite-location.txt")
+  user_data =  local_file.ignition_ign.content
   resource_group = data.ibm_resource_group.example-rg.id
 
   primary_network_interface {
@@ -206,7 +209,7 @@ resource "ibm_is_instance" "worker" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data =  file("${abspath(path.module)}/attachHost-satellite-location.txt")
+  user_data =  local_file.ignition_ign.content
   resource_group = data.ibm_resource_group.example-rg.id
 
 
