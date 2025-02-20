@@ -87,7 +87,7 @@ resource "ibm_is_subnet" "subnets" {
   resource_group = data.ibm_resource_group.example-rg.id
 
 
-  depends_on = [ibm_is_vpc_address_prefix.example-address-prefix[each.key]]
+  depends_on = [ibm_is_vpc_address_prefix.example-address-prefix]
 }
 
 ##############################################################################
