@@ -30,13 +30,10 @@ data "ibm_resource_group" "example-rg" {
 # Satellite script
 ##############################################################################
 
-data "local_file" "test_file" {
-  filename = "${abspath(path.module)}/file.txt"
-}
 
-#data "local_file" "ignition_config" {
-#  filename = "${abspath(path.module)}/attachHost-satellite-location.ign"
-#}
+data "local_file" "ignition_config" {
+  filename = "${abspath(path.module)}/test.ign"
+}
 
 ##############################################################################
 # VPC
@@ -150,7 +147,7 @@ resource "ibm_is_instance" "control_plane" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data = file("${abspath(path.module)}/attachHost-satellite-location.ign")
+  user_data = data.local_file.ignition_config.content
   resource_group = data.ibm_resource_group.example-rg.id
 
   primary_network_interface {
@@ -191,7 +188,7 @@ resource "ibm_is_instance" "worker" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data = file("${abspath(path.module)}/attachHost-satellite-location.ign")
+  user_data = data.local_file.ignition_config.content
   resource_group = data.ibm_resource_group.example-rg.id
 
 
