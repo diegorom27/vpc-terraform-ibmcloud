@@ -40,15 +40,6 @@ import {
   id       = each.key
 }
 
-#resource "null_resource" "import_instances" {
-#  depends_on = [data.ibm_is_instances.ds_instances]
-#  for_each = { for instance in data.ibm_is_instances.ds_instances.instances : instance.id => instance }
-#
-#  provisioner "local-exec" {
-#    command = "terraform import ibm_is_instance.vsi[${each.key}] ${each.key}"
-#  }
-#}
-
 locals {
   machines_map = { for m in var.MACHINES : m.name => { hProfile = m.hProfile, lProfile = m.lProfile } }
   instances_map = {
