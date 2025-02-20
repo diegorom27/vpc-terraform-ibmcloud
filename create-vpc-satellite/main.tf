@@ -17,6 +17,7 @@ provider ibm {
     alias  = "primary"
     region = var.ibm_region
     max_retries = 20
+    generation = 2
 }
 ##############################################################################
 #Locals
@@ -74,6 +75,9 @@ resource "ibm_is_subnet" "subnets" {
   zone                     = each.value.zone
   ipv4_cidr_block          = each.value.cidr
   resource_group = data.ibm_resource_group.example-rg.id
+
+
+  depends_on = [ibm_is_vpc_address_prefix.example-address-prefix]
 }
 
 ##############################################################################
