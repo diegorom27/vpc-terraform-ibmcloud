@@ -39,7 +39,7 @@ locals {
 # Resource Group
 ##############################################################################
 
-data "ibm_resource_group" "example-rg" {
+data "ibm_resource_group" "cluster-rg" {
   name = var.resource_group
 }
 
@@ -47,9 +47,9 @@ data "ibm_resource_group" "example-rg" {
 # VPC
 ##############################################################################
 
-resource "ibm_is_vpc" "example-vpc" {
+resource "ibm_is_vpc" "cluster-vpc" {
   name = "${var.BASENAME}-vpc"
-  resource_group = data.ibm_resource_group.example-rg.id
+  resource_group = data.ibm_resource_group.cluster-rg.id
   address_prefix_management = "manual"
 
   timeouts {
@@ -58,14 +58,14 @@ resource "ibm_is_vpc" "example-vpc" {
   }
 }
 
-resource "ibm_is_vpc_address_prefix" "example-address-prefix" {
+resource "ibm_is_vpc_address_prefix" "cluster-address-prefix" {
   for_each = {for vm in var.subnets : vm.name => vm }
   name = "address-prefix-${each.value.zone}"
   zone = each.value.zone
-  vpc  = ibm_is_vpc.example-vpc.id
+  vpc  = ibm_is_vpc.cluster-vpc.id
   cidr = each.value.prefix
 
-  depends_on = [ ibm_is_vpc.example-vpc ]
+  depends_on = [ ibm_is_vpc.cluster-vpc ]
 }
 
 ##############################################################################
@@ -75,15 +75,15 @@ resource "ibm_is_vpc_address_prefix" "example-address-prefix" {
 resource "ibm_is_public_gateway" "p-gateway" {
   for_each = {for sub in var.subnets : sub.name => sub }
   name = "${each.value.zone}-gateway"
-  vpc  = ibm_is_vpc.example-vpc.id
+  vpc  = ibm_is_vpc.cluster-vpc.id
   zone = each.value.zone  
-  resource_group = data.ibm_resource_group.example-rg.id
+  resource_group = data.ibm_resource_group.cluster-rg.id
 
   timeouts {
     create = "90m"
   }
   
-  depends_on = [ ibm_is_vpc.example-vpc ]
+  depends_on = [ ibm_is_vpc.cluster-vpc ]
 }
 
 
@@ -94,22 +94,22 @@ resource "ibm_is_public_gateway" "p-gateway" {
 resource "ibm_is_subnet" "subnets" {
   for_each = {for vm in var.subnets : vm.name => vm }
   name                     = each.value.name
-  vpc                      = ibm_is_vpc.example-vpc.id
+  vpc                      = ibm_is_vpc.cluster-vpc.id
   zone                     = each.value.zone
   ipv4_cidr_block          = each.value.cidr
-  resource_group = data.ibm_resource_group.example-rg.id
+  resource_group = data.ibm_resource_group.cluster-rg.id
 
 
-  depends_on = [ibm_is_vpc_address_prefix.example-address-prefix]
+  depends_on = [ibm_is_vpc_address_prefix.cluster-address-prefix]
 }
 
-resource "ibm_is_subnet_public_gateway_attachment" "example" {
+resource "ibm_is_subnet_public_gateway_attachment" "public_gateway_attachment" {
   for_each = {for sub in var.subnets : sub.name => sub }
   subnet                = ibm_is_subnet.subnets[each.value.name].id
   public_gateway         = ibm_is_public_gateway.p-gateway[each.value.name].id
-  resource_group = data.ibm_resource_group.example-rg.id
+  resource_group = data.ibm_resource_group.cluster-rg.id
 
-    depends_on = [ibm_is_vpc_address_prefix.example-address-prefix, ibm_is_subnet.subnets]
+  depends_on = [ibm_is_vpc_address_prefix.cluster-address-prefix, ibm_is_subnet.subnets]
 }
 ##############################################################################
 # security_group
@@ -117,9 +117,9 @@ resource "ibm_is_subnet_public_gateway_attachment" "example" {
 
 resource "ibm_is_security_group" "cluster-sg" {
   name = "${var.BASENAME}-sg1"
-  vpc  = ibm_is_vpc.example-vpc.id
+  vpc  = ibm_is_vpc.cluster-vpc.id
 
-  depends_on = [ ibm_is_vpc.example-vpc ]
+  depends_on = [ ibm_is_vpc.cluster-vpc ]
 }
 
 # allow all incoming network traffic on port 22
@@ -171,8 +171,8 @@ resource "ibm_is_security_group_rule" "egress_rule_all" {
 
 resource "ibm_is_security_group" "bastion-sg" {
   name = "${var.BASENAME}-sg2"
-  vpc  = ibm_is_vpc.example-vpc.id
-  depends_on = [ ibm_is_vpc.example-vpc ]
+  vpc  = ibm_is_vpc.cluster-vpc.id
+  depends_on = [ ibm_is_vpc.cluster-vpc ]
 }
 resource "ibm_is_security_group_rule" "testacc_security_group_rule_ssh" {
     group = ibm_is_security_group.bastion-sg.id
@@ -217,20 +217,20 @@ resource "ibm_is_ssh_key" "ssh_key" {
 resource "ibm_is_instance" "control_plane" {
   for_each = { for vm in var.control_plane : vm.name => vm }
   name    =  each.value.name
-  vpc     = ibm_is_vpc.example-vpc.id
+  vpc     = ibm_is_vpc.cluster-vpc.id
   zone    = local.subnets_map[each.value.subnetIndex].zone
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
   user_data =  file("${path.module}/attachHost-satellite-location.sh")
-  resource_group = data.ibm_resource_group.example-rg.id
+  resource_group = data.ibm_resource_group.cluster-rg.id
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[each.value.subnetIndex].id
       security_groups = [ibm_is_security_group.cluster-sg.id]
   }
 }
-resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
+resource "ibm_is_instance_volume_attachment" "control-vol-attach" {
   for_each = { for vm in var.control_plane : vm.name => vm }
   
   instance = ibm_is_instance.control_plane[each.key].id
@@ -248,23 +248,16 @@ resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
   }
 }
 
-resource "ibm_is_floating_ip" "fip_control_plane" {
-  for_each = { for vm in var.control_plane : vm.name => vm }
-  name   = "${var.BASENAME}-fip-${each.value.name}"
-  target = ibm_is_instance.control_plane["${each.value.name}"].primary_network_interface[0].id
-  resource_group = data.ibm_resource_group.example-rg.id
-}
-
 resource "ibm_is_instance" "worker" {
   for_each = { for vm in var.worker : vm.name => vm }
   name    =  each.value.name
-  vpc     = ibm_is_vpc.example-vpc.id
+  vpc     = ibm_is_vpc.cluster-vpc.id
   zone    = local.subnets_map[each.value.subnetIndex].zone
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
   user_data =  file("${path.module}/attachHost-satellite-location.sh")
-  resource_group = data.ibm_resource_group.example-rg.id
+  resource_group = data.ibm_resource_group.cluster-rg.id
 
 
   primary_network_interface {
@@ -297,7 +290,15 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
 #  for_each = { for vm in var.worker : vm.name => vm }
 #  name   = "${var.BASENAME}-fip-${each.value.name}"
 #  target = ibm_is_instance.worker["${each.value.name}"].primary_network_interface[0].id
-#  resource_group = data.ibm_resource_group.example-rg.id
+#  resource_group = data.ibm_resource_group.cluster-rg.id
+#}
+
+
+#resource "ibm_is_floating_ip" "fip_control_plane" {
+#  for_each = { for vm in var.control_plane : vm.name => vm }
+#  name   = "${var.BASENAME}-fip-${each.value.name}"
+#  target = ibm_is_instance.control_plane["${each.value.name}"].primary_network_interface[0].id
+#  resource_group = data.ibm_resource_group.cluster-rg.id
 #}
 
 ##############################################################################
@@ -306,12 +307,12 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
 
 resource "ibm_is_instance" "bastion" {
   name    = "bastion"
-  vpc     = ibm_is_vpc.example-vpc.id
+  vpc     = ibm_is_vpc.cluster-vpc.id
   zone    = var.subnets[0].zone
   keys    = ibm_is_ssh_key.ssh_key.id
   image   = var.image-windows
   profile = var.bastion-profile
-  resource_group = data.ibm_resource_group.example-rg.id
+  resource_group = data.ibm_resource_group.cluster-rg.id
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[var.subnets[0].subnetIndex].id
@@ -322,12 +323,13 @@ resource "ibm_is_instance" "bastion" {
 resource "ibm_is_floating_ip" "fip_bastion" {
   name   = "bastion-fip"
   target = ibm_is_instance.bastion.primary_network_interface[0].id
-  resource_group = data.ibm_resource_group.example-rg.id
+  resource_group = data.ibm_resource_group.cluster-rg.id
 }
 
 ##############################################################################
 # Output
 ##############################################################################
+
 output "fip_bastion" {
   value = ibm_is_floating_ip.fip_bastion.address
 }
