@@ -261,7 +261,7 @@ resource "ibm_is_instance" "bastion" {
   name    = "bastion"
   vpc     = ibm_is_vpc.cluster-vpc.id
   zone    = var.subnets[0].zone
-  keys    = ibm_is_ssh_key.ssh_key.id
+  keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-windows
   profile = var.bastion-profile
   resource_group = data.ibm_resource_group.cluster-rg.id
