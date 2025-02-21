@@ -79,7 +79,7 @@ variable "image-windows" {
     type        = string
     default     = "r006-1881f528-9ece-4131-abc9-144c16fa0b7f"
 }
-variable control_plane {
+variable "control_plane" {
     description = "List of vm for control plane"
     type = list(object({
         name = string,
