@@ -194,10 +194,10 @@ resource "ibm_is_security_group_rule" "allow_ssh_anywhere" {
 }
 
 resource "ibm_is_security_group_rule" "egress_rule_all" {
-  group     = ibm_is_security_group.cluster-sg.id
+  group     = ibm_is_security_group.bastion-sg.id
   direction = "outbound"
   remote    = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.cluster-sg ]
+  depends_on = [ ibm_is_security_group.bastion-sg ]
 }
 
 ##############################################################################
@@ -269,7 +269,7 @@ resource "ibm_is_instance" "worker" {
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[each.value.subnetIndex].id
-      security_groups = [ibm_is_security_group.cluster-sg.id]
+      security_groups = [ibm_is_security_group.bastion-sg.id]
   }
 }
 resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
@@ -315,7 +315,7 @@ resource "ibm_is_instance" "bastion" {
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[var.subnets[0].subnetIndex].id
-      security_groups = [ibm_is_security_group.cluster-sg.id]
+      security_groups = [ibm_is_security_group.bastion-sg.id]
   }
 }
 
