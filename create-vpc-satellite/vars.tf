@@ -68,6 +68,17 @@ variable "image-coreos" {
     type        = string
     default     = "r006-1f8aa558-5a97-4e31-a43f-75cc97e0aeae"
 }
+variable "bastion-profile" {
+    description = "Bastion profile"
+    type        = string
+    default     = "bx2-4x16"
+  
+}
+variable "image-windows" {
+    description = "Windows image ID"
+    type        = string
+    default     = "r006-1881f528-9ece-4131-abc9-144c16fa0b7f"
+}
 variable control_plane {
     description = "List of vm for control plane"
     type = list(object({

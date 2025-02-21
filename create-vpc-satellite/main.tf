@@ -72,10 +72,11 @@ resource "ibm_is_vpc_address_prefix" "example-address-prefix" {
 # Public Gateway 
 ##############################################################################
 
-resource "ibm_is_public_gateway" "example-gateway" {
-  name = "${var.BASENAME}-gateway"
+resource "ibm_is_public_gateway" "p-gateway" {
+  for_each = {for sub in var.subnets : sub.name => sub }
+  name = "${each.value.zone}-gateway"
   vpc  = ibm_is_vpc.example-vpc.id
-  zone = "us-south-1"
+  zone = each.value.zone  
   resource_group = data.ibm_resource_group.example-rg.id
 
   timeouts {
@@ -84,6 +85,8 @@ resource "ibm_is_public_gateway" "example-gateway" {
   
   depends_on = [ ibm_is_vpc.example-vpc ]
 }
+
+
 ##############################################################################
 # subnet 
 ##############################################################################
@@ -100,11 +103,19 @@ resource "ibm_is_subnet" "subnets" {
   depends_on = [ibm_is_vpc_address_prefix.example-address-prefix]
 }
 
+resource "ibm_is_subnet_public_gateway_attachment" "example" {
+  for_each = {for sub in var.subnets : sub.name => sub }
+  subnet                = ibm_is_subnet.subnets[each.value.name].id
+  public_gateway         = ibm_is_public_gateway.p-gateway[each.value.name].id
+  resource_group = data.ibm_resource_group.example-rg.id
+
+    depends_on = [ibm_is_vpc_address_prefix.example-address-prefix, ibm_is_subnet.subnets]
+}
 ##############################################################################
 # security_group
 ##############################################################################
 
-resource "ibm_is_security_group" "example-sg" {
+resource "ibm_is_security_group" "cluster-sg" {
   name = "${var.BASENAME}-sg1"
   vpc  = ibm_is_vpc.example-vpc.id
 
@@ -113,44 +124,80 @@ resource "ibm_is_security_group" "example-sg" {
 
 # allow all incoming network traffic on port 22
 resource "ibm_is_security_group_rule" "ingress_ssh_all" {
-  group     = ibm_is_security_group.example-sg.id
+  group     = ibm_is_security_group.cluster-sg.id
   direction = "inbound"
   remote    = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.example-sg ]
+  depends_on = [ ibm_is_security_group.cluster-sg ]
   tcp {
     port_min = 22
     port_max = 22
   }
 }
 resource "ibm_is_security_group_rule" "tcp_rule" {
-  group      = ibm_is_security_group.example-sg.id
+  group      = ibm_is_security_group.cluster-sg.id
   direction  = "inbound"
   remote     = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.example-sg ]
+  depends_on = [ ibm_is_security_group.cluster-sg ]
   tcp {
   }
 }
 resource "ibm_is_security_group_rule" "udp_rule" {
-  group      = ibm_is_security_group.example-sg.id
+  group      = ibm_is_security_group.cluster-sg.id
   direction  = "inbound"
   remote     = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.example-sg ]
+  depends_on = [ ibm_is_security_group.cluster-sg ]
   udp {
   }
 }
 resource "ibm_is_security_group_rule" "icmp_rule" {
-  group     = ibm_is_security_group.example-sg.id
+  group     = ibm_is_security_group.cluster-sg.id
   direction = "inbound"
   remote    = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.example-sg ]
+  depends_on = [ ibm_is_security_group.cluster-sg ]
   icmp {
   }
 }
 resource "ibm_is_security_group_rule" "egress_rule_all" {
-  group     = ibm_is_security_group.example-sg.id
+  group     = ibm_is_security_group.cluster-sg.id
   direction = "outbound"
   remote    = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.example-sg ]
+  depends_on = [ ibm_is_security_group.cluster-sg ]
+}
+
+
+##############################################################################
+# security_group bastion
+##############################################################################
+
+resource "ibm_is_security_group" "bastion-sg" {
+  name = "${var.BASENAME}-sg2"
+  vpc  = ibm_is_vpc.example-vpc.id
+  depends_on = [ ibm_is_vpc.example-vpc ]
+}
+resource "ibm_is_security_group_rule" "testacc_security_group_rule_ssh" {
+    group = ibm_is_security_group.bastion-sg.id
+    direction = "inbound"
+    remote = "0.0.0.0/0"
+    icmp {
+        code = 22
+        type = 22
+    }
+}
+resource "ibm_is_security_group_rule" "allow_ssh_anywhere" {
+  group = ibm_is_security_group.bastion-sg.id
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+  tcp {
+    port_min = 22
+    port_max = 22
+  }
+}
+
+resource "ibm_is_security_group_rule" "egress_rule_all" {
+  group     = ibm_is_security_group.cluster-sg.id
+  direction = "outbound"
+  remote    = "0.0.0.0/0"
+  depends_on = [ ibm_is_security_group.cluster-sg ]
 }
 
 ##############################################################################
@@ -180,7 +227,7 @@ resource "ibm_is_instance" "control_plane" {
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[each.value.subnetIndex].id
-      security_groups = [ibm_is_security_group.example-sg.id]
+      security_groups = [ibm_is_security_group.cluster-sg.id]
   }
 }
 resource "ibm_is_instance_volume_attachment" "example-vol-att-1" {
@@ -222,7 +269,7 @@ resource "ibm_is_instance" "worker" {
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[each.value.subnetIndex].id
-      security_groups = [ibm_is_security_group.example-sg.id]
+      security_groups = [ibm_is_security_group.cluster-sg.id]
   }
 }
 resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
@@ -242,10 +289,45 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
     delete = "15m"
   }
 }
+##############################################################################
+# Acceso sin bastion
+##############################################################################
 
-resource "ibm_is_floating_ip" "fip_worker" {
-  for_each = { for vm in var.worker : vm.name => vm }
-  name   = "${var.BASENAME}-fip-${each.value.name}"
-  target = ibm_is_instance.worker["${each.value.name}"].primary_network_interface[0].id
+#resource "ibm_is_floating_ip" "fip_worker" {
+#  for_each = { for vm in var.worker : vm.name => vm }
+#  name   = "${var.BASENAME}-fip-${each.value.name}"
+#  target = ibm_is_instance.worker["${each.value.name}"].primary_network_interface[0].id
+#  resource_group = data.ibm_resource_group.example-rg.id
+#}
+
+##############################################################################
+# Bastion
+##############################################################################
+
+resource "ibm_is_instance" "bastion" {
+  name    = "bastion"
+  vpc     = ibm_is_vpc.example-vpc.id
+  zone    = var.subnets[0].zone
+  keys    = ibm_is_ssh_key.ssh_key.id
+  image   = var.image-windows
+  profile = var.bastion-profile
   resource_group = data.ibm_resource_group.example-rg.id
+
+  primary_network_interface {
+      subnet          = ibm_is_subnet.subnets[var.subnets[0].subnetIndex].id
+      security_groups = [ibm_is_security_group.cluster-sg.id]
+  }
+}
+
+resource "ibm_is_floating_ip" "fip_bastion" {
+  name   = "bastion-fip"
+  target = ibm_is_instance.bastion.primary_network_interface[0].id
+  resource_group = data.ibm_resource_group.example-rg.id
+}
+
+##############################################################################
+# Output
+##############################################################################
+output "fip_bastion" {
+  value = ibm_is_floating_ip.fip_bastion.address
 }
