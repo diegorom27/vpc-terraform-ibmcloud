@@ -268,7 +268,7 @@ resource "ibm_is_instance" "bastion" {
   resource_group = data.ibm_resource_group.cluster-rg.id
 
   primary_network_interface {
-      subnet          = ibm_is_subnet.subnets[var.subnets[0].subnetIndex].id
+      subnet          = ibm_is_subnet.subnets[var.subnets[0].name].id
       security_groups = [ibm_is_security_group.cluster-sg.id]
   }
 }
