@@ -107,7 +107,6 @@ resource "ibm_is_subnet_public_gateway_attachment" "public_gateway_attachment" {
   for_each = {for sub in var.subnets : sub.name => sub }
   subnet                = ibm_is_subnet.subnets[each.value.name].id
   public_gateway         = ibm_is_public_gateway.p-gateway[each.value.name].id
-  resource_group = data.ibm_resource_group.cluster-rg.id
 
   depends_on = [ibm_is_vpc_address_prefix.cluster-address-prefix, ibm_is_subnet.subnets]
 }
