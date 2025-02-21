@@ -122,17 +122,6 @@ resource "ibm_is_security_group" "cluster-sg" {
   depends_on = [ ibm_is_vpc.cluster-vpc ]
 }
 
-# allow all incoming network traffic on port 22
-resource "ibm_is_security_group_rule" "ingress_ssh_all" {
-  group     = ibm_is_security_group.cluster-sg.id
-  direction = "inbound"
-  remote    = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.cluster-sg ]
-  tcp {
-    port_min = 22
-    port_max = 22
-  }
-}
 resource "ibm_is_security_group_rule" "tcp_rule" {
   group      = ibm_is_security_group.cluster-sg.id
   direction  = "inbound"
@@ -162,50 +151,6 @@ resource "ibm_is_security_group_rule" "cluster_egress_rule_all" {
   direction = "outbound"
   remote    = "0.0.0.0/0"
   depends_on = [ ibm_is_security_group.cluster-sg ]
-}
-
-
-##############################################################################
-# security_group bastion
-##############################################################################
-
-resource "ibm_is_security_group" "bastion-sg" {
-  name = "${var.BASENAME}-sg2"
-  vpc  = ibm_is_vpc.cluster-vpc.id
-  depends_on = [ ibm_is_vpc.cluster-vpc ]
-}
-resource "ibm_is_security_group_rule" "bastion_tcp_rule" {
-  group      = ibm_is_security_group.bastion-sg.id
-  direction  = "inbound"
-  remote     = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.bastion-sg ]
-  tcp {
-  }
-}
-resource "ibm_is_security_group_rule" "security_group_rule_ssh" {
-    group = ibm_is_security_group.bastion-sg.id
-    direction = "inbound"
-    remote = "0.0.0.0/0"
-    icmp {
-        code = 22
-        type = 22
-    }
-}
-resource "ibm_is_security_group_rule" "allow_ssh_anywhere" {
-  group = ibm_is_security_group.bastion-sg.id
-  direction = "inbound"
-  remote    = "0.0.0.0/0"
-  tcp {
-    port_min = 22
-    port_max = 22
-  }
-}
-
-resource "ibm_is_security_group_rule" "bastion_egress_rule_all" {
-  group     = ibm_is_security_group.bastion-sg.id
-  direction = "outbound"
-  remote    = "0.0.0.0/0"
-  depends_on = [ ibm_is_security_group.bastion-sg ]
 }
 
 ##############################################################################
@@ -270,7 +215,7 @@ resource "ibm_is_instance" "worker" {
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[each.value.subnetIndex].id
-      security_groups = [ibm_is_security_group.bastion-sg.id]
+      security_groups = [ibm_is_security_group.cluster-sg.id]
   }
 }
 resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
@@ -324,7 +269,7 @@ resource "ibm_is_instance" "bastion" {
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[var.subnets[0].subnetIndex].id
-      security_groups = [ibm_is_security_group.bastion-sg.id]
+      security_groups = [ibm_is_security_group.cluster-sg.id]
   }
 }
 
