@@ -157,7 +157,7 @@ resource "ibm_is_security_group_rule" "icmp_rule" {
   icmp {
   }
 }
-resource "ibm_is_security_group_rule" "egress_rule_all" {
+resource "ibm_is_security_group_rule" "cluster_egress_rule_all" {
   group     = ibm_is_security_group.cluster-sg.id
   direction = "outbound"
   remote    = "0.0.0.0/0"
@@ -174,7 +174,15 @@ resource "ibm_is_security_group" "bastion-sg" {
   vpc  = ibm_is_vpc.cluster-vpc.id
   depends_on = [ ibm_is_vpc.cluster-vpc ]
 }
-resource "ibm_is_security_group_rule" "testacc_security_group_rule_ssh" {
+resource "ibm_is_security_group_rule" "bastion_tcp_rule" {
+  group      = ibm_is_security_group.bastion-sg.id
+  direction  = "inbound"
+  remote     = "0.0.0.0/0"
+  depends_on = [ ibm_is_security_group.bastion-sg ]
+  tcp {
+  }
+}
+resource "ibm_is_security_group_rule" "security_group_rule_ssh" {
     group = ibm_is_security_group.bastion-sg.id
     direction = "inbound"
     remote = "0.0.0.0/0"
@@ -193,7 +201,7 @@ resource "ibm_is_security_group_rule" "allow_ssh_anywhere" {
   }
 }
 
-resource "ibm_is_security_group_rule" "egress_rule_all" {
+resource "ibm_is_security_group_rule" "bastion_egress_rule_all" {
   group     = ibm_is_security_group.bastion-sg.id
   direction = "outbound"
   remote    = "0.0.0.0/0"
