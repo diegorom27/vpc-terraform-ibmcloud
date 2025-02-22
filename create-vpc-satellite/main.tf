@@ -42,7 +42,7 @@ locals {
 resource "ibm_satellite_location" "satellite-location-demo" {
   location          = "satellite-location-demo"
   zones             = local.location_zones
-  managed_from      = "us-south-1"
+  managed_from      = var.datacenter-satellite
   resource_group_id = data.ibm_resource_group.cluster-rg.id
   coreos_enabled   = false
 }

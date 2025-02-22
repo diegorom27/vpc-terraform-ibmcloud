@@ -16,6 +16,11 @@ variable ibm_region {
       )
     }
 }
+variable "datacenter-satellite" {
+    description = "Datacenter to create resources in"
+    type        = string
+    default     = "dal10"
+}
 variable "resource_group" {
     description = "Resource group to create resources in"
     type        = string
