@@ -60,7 +60,6 @@ data "ibm_satellite_attach_host_script" "script" {
   location          = ibm_satellite_location.satellite-location-demo.location
   host_provider     = "ibm"
   coreos_host      = false
-  managed_from      = var.ibm_region
 
   depends_on = [ ibm_satellite_location.satellite-location-demo ]
 }
