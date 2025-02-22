@@ -263,7 +263,7 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
 
 #resource "time_sleep" "wait_30_min" {
 #  depends_on = [ibm_is_instance.control_plane]  
-#  create_duration = "10m" 
+#  create_duration = "7m" 
 #} 
 
 resource "ibm_satellite_host" "assign_host" {
