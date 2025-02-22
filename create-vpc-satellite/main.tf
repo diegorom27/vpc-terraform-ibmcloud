@@ -42,6 +42,27 @@ locals {
 data "ibm_resource_group" "cluster-rg" {
   name = var.resource_group
 }
+##############################################################################
+# Satellite
+##############################################################################
+locals {
+  location_zones = [for subnet in var.subnets : subnet.zone]
+}
+resource "ibm_satellite_location" "satellite-location-demo" {
+  location          = "satellite-location-demo"
+  zones             = local.location_zones
+  managed_from      = var.ibm_region
+  resource_group_id = data.ibm_resource_group.cluster-rg.id
+}
+
+data "ibm_satellite_attach_host_script" "script" {
+  location          = ibm_satellite_location.satellite-location-demo.location
+  host_provider     = "ibm"
+  core_enabled      = false
+  managed_from      = var.ibm_region
+
+  depends_on = [ ibm_satellite_location.satellite-location-demo ]
+}
 
 ##############################################################################
 # VPC
@@ -174,13 +195,14 @@ resource "ibm_is_instance" "control_plane" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data =  file("${path.module}/attachHost-satellite-location.sh")
+  user_data =  file(data.ibm_satellite_attach_host_script.script.script_path)
   resource_group = data.ibm_resource_group.cluster-rg.id
 
   primary_network_interface {
       subnet          = ibm_is_subnet.subnets[each.value.subnetIndex].id
       security_groups = [ibm_is_security_group.cluster-sg.id]
   }
+  depends_on = [ data.ibm_satellite_attach_host_script.script ]
 }
 resource "ibm_is_instance_volume_attachment" "control-vol-attach" {
   for_each = { for vm in var.control_plane : vm.name => vm }
@@ -208,7 +230,7 @@ resource "ibm_is_instance" "worker" {
   keys    = [ibm_is_ssh_key.ssh_key.id]
   image   = var.image-coreos
   profile = var.ENABLE_HIGH_PERFORMANCE ?each.value.hProfile:each.value.lProfile
-  user_data =  file("${path.module}/attachHost-satellite-location.sh")
+  user_data =  file(data.ibm_satellite_attach_host_script.script.script_path)
   resource_group = data.ibm_resource_group.cluster-rg.id
 
 
@@ -216,6 +238,7 @@ resource "ibm_is_instance" "worker" {
       subnet          = ibm_is_subnet.subnets[each.value.subnetIndex].id
       security_groups = [ibm_is_security_group.cluster-sg.id]
   }
+  depends_on = [ data.ibm_satellite_attach_host_script.script ]
 }
 resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
   for_each = { for vm in var.worker : vm.name => vm }
@@ -234,6 +257,27 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
     delete = "15m"
   }
 }
+##############################################################################
+# Asignacion de hosts para control plane
+##############################################################################
+
+resource "time_sleep" "wait_30_min" {
+  depends_on = [ibm_is_instance.control_plane]
+  create_duration = "30m"
+}
+
+resource "ibm_satellite_host" "assign_host" {
+  for_each = { for vm in var.control_plane : vm.name => vm }
+
+  location      = ibm_satellite_location.satellite-location-demo.id
+
+  host_id       = ibm_is_instance.control_plane[each.value.name].id
+  labels        = ["env:prod"]
+  zone          = local.subnets_map[each.value.subnetIndex].zone 
+  host_provider = "ibm"
+  depends_on = [time_sleep.wait_40_min]
+}
+
 ##############################################################################
 # Acceso sin bastion
 ##############################################################################
