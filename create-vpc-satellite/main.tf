@@ -26,15 +26,6 @@ locals {
   subnets_map = { for s in var.subnets : s.name => s }
 }
 
-# test to try to use an ignition file with schematics
-## dont work(it could be a problem with fedora coreos img or the change of file extension)
-## Schematics does not support the ignition file extension
-## the recommended way is to use terraform without schematics
-#resource "local_file" "ignition_ign" {
-#  filename = "${path.module}/config.ign"
-#  content  = file("${abspath(path.module)}/attachHost-satellite-location.txt")
-#}
-
 ##############################################################################
 # Resource Group
 ##############################################################################
@@ -49,7 +40,7 @@ locals {
   location_zones = [for subnet in var.subnets : subnet.zone]
 }
 resource "ibm_satellite_location" "satellite-location-demo" {
-  location          = "satellite"
+  location          = "satellite-location-demo"
   zones             = local.location_zones
   managed_from      = "us-south-1"
   resource_group_id = data.ibm_resource_group.cluster-rg.id
@@ -258,26 +249,23 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
   }
 }
 ##############################################################################
-# Asignacion de hosts para control plane
+# Asignacion de hosts*(En caso de no querer usar scripts)
+# Esta forma permitiria asignar los coreos en schematics
+# Schematics no permite archivos .ign
 ##############################################################################
 
-#resource "time_sleep" "wait_30_min" {
-#  depends_on = [ibm_is_instance.control_plane]  
-#  create_duration = "7m" 
-#} 
-
-resource "ibm_satellite_host" "assign_host" {
-  for_each = { for vm in var.control_plane : vm.name => vm }
-
-  location      = ibm_satellite_location.satellite-location-demo.id
-
-  host_id       = ibm_is_instance.control_plane[each.value.name].id
-  labels        = ["env:prod"]
-  zone          = local.subnets_map[each.value.subnetIndex].zone 
-  host_provider = "ibm"
-  #depends_on = [time_sleep.wait_30_min]
-    depends_on = [ibm_is_instance.control_plane]
-}
+#resource "ibm_satellite_host" "assign_host" {
+#  for_each = { for vm in var.control_plane : vm.name => vm }
+#
+#  location      = ibm_satellite_location.satellite-location-demo.id
+#
+#  host_id       = ibm_is_instance.control_plane[each.value.name].id
+#  labels        = ["env:prod"]
+#  zone          = local.subnets_map[each.value.subnetIndex].zone 
+#  host_provider = "ibm"
+#  #depends_on = [time_sleep.wait_30_min]
+#    depends_on = [ibm_is_instance.control_plane]
+#}
 
 ##############################################################################
 # Acceso sin bastion
