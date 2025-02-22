@@ -9,13 +9,13 @@ if [[ -f "$HOST_ASSIGN_FLAG" ]]; then
 	exit 0
 fi
 set +x
-HOST_QUEUE_TOKEN="c283ea083dce35aac8eccac1bcca452a6bbc6975c9b605e6f910eec87b54ce4e873258f195aa6ef162925da6b73c55ffaa105d2170fa0999f63ea56d12b1acca7e6fccc4e543b225bb2d03b1f296da95aec45a3b466b121d2abe3dd0037fc790cd312745771cbfac721f8a79bce7fa980f2afb2ca8eb5e81c84099a8ccb0dac0e789ee65032fd2482c4149b50acf847c5513b67cb69792d284d2cbf043db315a6a73f5d65763a81d9b3d23cc6da2b38dd0051854f5b415d81ef9c8b7524cd67f747cd05d34b34e56b24b1763cc9356576cf297f0173ce58aab3acb854950f5ff1f75e3aee680ebefef8e2ef30256e246e204f1dab74f466f234f3868b24085d4"
+HOST_QUEUE_TOKEN="6bef06f13a4906ece90750e626f7f1e3e93024aa31b05375192e4609d3ecbf65a02764fe714d1937286e7e4dcea050ce66731f158159e75cb757d05537c898989407bf32dd693c985c6940a1a0f1f3f2b1ebb7fc47432dbb16bf8b7af34861d34990694f536dd064c0f80644a7336e1e86a8ce830d97be76a63d73abbf9fcb0c8065d7f0b12b062cad9887c0d2b7a297a9f3d8170f5243257e733d004a29e3538e8e53412a915887e40418a3d1ca49691632e1a4755810de514de53ca75d47d6d2d66f584eda753eba0ccc50ce41d6e42a0bcdfb21ccadaf5b68f1b4e89160f9185721f2c9ebfac635bf5eb60a72960bbe44b1983b41c8dd9a1769b8737d7792"
 set -x
 ACCOUNT_ID="736c7cd58317415b8d28a03e0e81eaf5"
-CONTROLLER_ID="cur6p5uw0849r9bjeh90"
+CONTROLLER_ID="cusjahpd0ohv8406vjbg"
 SELECTOR_LABELS='{}'
-API_URL="https://origin.us-east.containers.cloud.ibm.com/"
-REGION="us-east"
+API_URL="https://origin.us-south.containers.cloud.ibm.com/"
+REGION="us-south"
 
 export HOST_QUEUE_TOKEN
 export ACCOUNT_ID
@@ -50,25 +50,19 @@ fi
 export OPERATING_SYSTEM
 
 if [[ "${OPERATING_SYSTEM}" == "RHEL8" ]] || [[ "${OPERATING_SYSTEM}" == "RHEL9" ]]; then
-	yum install python39 jq -y
+	yum install python39 -y
 fi
-
 
 mkdir -p /etc/satellitemachineidgeneration
 if [[ ! -f /etc/satellitemachineidgeneration/machineidgenerated ]]; then
     rm -f /etc/machine-id
     systemd-machine-id-setup
-    if [[ -f /etc/machine-id ]]; then
-      cat /etc/machine-id > /etc/satellitemachineidgeneration/randommachineval
-    fi
     if openssl rand -hex 16; then
-      openssl rand -hex 16 > /etc/satellitemachineidgeneration/randommachineval
+      openssl rand -hex 16 > /etc/machine-id
     fi
     touch /etc/satellitemachineidgeneration/machineidgenerated
 fi
-if [[ -f /etc/satellitemachineidgeneration/randommachineval ]]; then
-  cat /etc/satellitemachineidgeneration/randommachineval > /etc/machine-id
-fi
+
 #STEP 1: GATHER INFORMATION THAT WILL BE USED TO REGISTER THE HOST
 HOSTNAME=$(hostname -s)
 HOSTNAME=${HOSTNAME,,}
@@ -221,6 +215,8 @@ cat <<EOF >register.json
 "labels": $SELECTOR_LABELS
 }
 EOF
+
+set -e
 
 set +x
 #STEP 3: REGISTER HOST TO THE HOSTQUEUE. NEED TO EVALUATE HTTP STATUS 409 EXISTS, 201 created. ALL OTHERS FAIL.
