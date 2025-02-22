@@ -53,12 +53,13 @@ resource "ibm_satellite_location" "satellite-location-demo" {
   zones             = local.location_zones
   managed_from      = var.ibm_region
   resource_group_id = data.ibm_resource_group.cluster-rg.id
+  coreos_enabled   = false
 }
 
 data "ibm_satellite_attach_host_script" "script" {
   location          = ibm_satellite_location.satellite-location-demo.location
   host_provider     = "ibm"
-  core_enabled      = false
+  coreos_host      = false
   managed_from      = var.ibm_region
 
   depends_on = [ ibm_satellite_location.satellite-location-demo ]
