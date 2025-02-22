@@ -275,7 +275,7 @@ resource "ibm_satellite_host" "assign_host" {
   labels        = ["env:prod"]
   zone          = local.subnets_map[each.value.subnetIndex].zone 
   host_provider = "ibm"
-  depends_on = [time_sleep.wait_40_min]
+  depends_on = [time_sleep.wait_30_min]
 }
 
 ##############################################################################
