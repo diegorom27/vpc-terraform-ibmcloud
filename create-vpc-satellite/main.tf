@@ -261,10 +261,10 @@ resource "ibm_is_instance_volume_attachment" "worker-vol-attach" {
 # Asignacion de hosts para control plane
 ##############################################################################
 
-resource "time_sleep" "wait_30_min" {
-  depends_on = [ibm_is_instance.control_plane]
-  create_duration = "10m"
-}
+#resource "time_sleep" "wait_30_min" {
+#  depends_on = [ibm_is_instance.control_plane]  
+#  create_duration = "10m" 
+#} 
 
 resource "ibm_satellite_host" "assign_host" {
   for_each = { for vm in var.control_plane : vm.name => vm }
@@ -275,7 +275,8 @@ resource "ibm_satellite_host" "assign_host" {
   labels        = ["env:prod"]
   zone          = local.subnets_map[each.value.subnetIndex].zone 
   host_provider = "ibm"
-  depends_on = [time_sleep.wait_30_min]
+  #depends_on = [time_sleep.wait_30_min]
+    depends_on = [ibm_is_instance.control_plane]
 }
 
 ##############################################################################
