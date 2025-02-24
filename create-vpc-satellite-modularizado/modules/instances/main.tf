@@ -32,7 +32,7 @@ resource "ibm_is_instance" "control_plane" {
   resource_group = var.resource_group
 
   primary_network_interface {
-      subnet          = var.ibm_subnets_map[each.value.subnetIndex].id
+      subnet          = var.ibm_subnets_map[each.value.subnetIndex]
       security_groups = [var.sg_id]
   }
 }
@@ -67,7 +67,7 @@ resource "ibm_is_instance" "worker" {
 
 
   primary_network_interface {
-      subnet          = var.ibm_subnets_map[each.value.subnetIndex].id
+      subnet          = var.ibm_subnets_map[each.value.subnetIndex]
       security_groups = [var.sg_id]
   }
 }
@@ -103,7 +103,7 @@ resource "ibm_is_instance" "bastion" {
   resource_group = var.resource_group
 
   primary_network_interface {
-      subnet          = var.ibm_subnets_map[var.subnets[0].name].id
+      subnet          = var.ibm_subnets_map[var.subnets[0].name]
       security_groups = [var.sg_id]
   }
 }
