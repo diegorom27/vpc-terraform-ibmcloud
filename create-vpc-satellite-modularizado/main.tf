@@ -78,3 +78,11 @@ module "instances" {
     subnets = var.subnets
     bastion-profile = var.bastion-profile
 }
+
+output "fip_bastion" {
+  value = "Ip bastion: ${module.instances.fip_bastion}"
+}
+
+output "bastion_password_command" {
+  value = "extract password command: ${module.instances.bastion_password_command}"
+}
