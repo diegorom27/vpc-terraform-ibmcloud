@@ -52,9 +52,7 @@ variable "ENABLE_HIGH_PERFORMANCE" {
 }
 variable "ibm_subnets_map" {
   description = "Subnets"
-    type = map(object({
-            id = string
-        }))
+  type        = map(string)
 }
 variable "sg_id" {
     description = "Security Group ID"
