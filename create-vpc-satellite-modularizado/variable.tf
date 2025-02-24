@@ -16,11 +16,6 @@ variable ibm_region {
       )
     }
 }
-variable "ibmcloud_api_key" {
-  description = "IBM Cloud API Key"
-  type        = string
-  sensitive   = true
-}
 
 variable "datacenter-satellite" {
     description = "Datacenter to create resources in"
