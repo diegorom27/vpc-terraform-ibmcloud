@@ -5,6 +5,19 @@ terraform {
     }
   }
 }
+
+##############################################################################
+# Prefiexes
+##############################################################################
+
+resource "ibm_is_vpc_address_prefix" "cluster-address-prefix" {
+  for_each = {for vm in var.subnets : vm.name => vm }
+  name = "address-prefix-${each.value.zone}"
+  zone = each.value.zone
+  vpc  = var.vpc_id
+  cidr = each.value.prefix
+}
+
 ##############################################################################
 # Public Gateway 
 ##############################################################################
@@ -18,6 +31,7 @@ resource "ibm_is_public_gateway" "p-gateway" {
   timeouts {
     create = "90m"
   }
+  depends_on = [ ibm_is_vpc_address_prefix.cluster-address-prefix ]
 }
 
 
@@ -32,6 +46,8 @@ resource "ibm_is_subnet" "subnets" {
   zone                     = each.value.zone
   ipv4_cidr_block          = each.value.cidr
   resource_group = var.resource_group
+  
+  depends_on = [ ibm_is_vpc_address_prefix.cluster-address-prefix ]
 }
 
 ##############################################################################

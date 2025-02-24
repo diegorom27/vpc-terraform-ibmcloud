@@ -16,13 +16,3 @@ resource "ibm_is_vpc" "cluster-vpc" {
     delete = "5m"
   }
 }
-
-resource "ibm_is_vpc_address_prefix" "cluster-address-prefix" {
-  for_each = {for vm in var.subnets : vm.name => vm }
-  name = "address-prefix-${each.value.zone}"
-  zone = each.value.zone
-  vpc  = ibm_is_vpc.cluster-vpc.id
-  cidr = each.value.prefix
-
-  depends_on = [ ibm_is_vpc.cluster-vpc ]
-}
